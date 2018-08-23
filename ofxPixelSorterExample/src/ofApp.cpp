@@ -5,7 +5,7 @@ void ofApp::setup(){
 	ofLogToConsole();
 
 	if (useImage) {
-		img.load("Image_2.jpg");
+		img.load("ExampleImage.jpg");
 	}
 	else {
 		vid.load("vid-facade.m4v");
