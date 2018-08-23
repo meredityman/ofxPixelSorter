@@ -53,24 +53,6 @@ public:
 	ofImage in;
 
 	SortFunction GetSortFunction();
-	static bool CompareBrightness(ofColor a, ofColor b, bool swap);
-	static bool CompareLightness(ofColor a, ofColor b, bool swap);
-	static bool CompareHue(ofColor a, ofColor b, bool swap);
-	static bool CompareSaturation(ofColor a, ofColor b, bool swap);
-	static bool CompareRedness(ofColor a, ofColor b, bool swap);
-	static bool CompareBlueness(ofColor a, ofColor b, bool swap);
-	static bool CompareGreeness(ofColor a, ofColor b, bool swap);
-	static bool CompareRandom(ofColor a, ofColor b, bool swap);	
-	
-	static bool CompareBrightness(ofColor a, float b, bool swap);
-	static bool CompareLightness(ofColor a, float  b, bool swap);
-	static bool CompareSaturation(ofColor a, float  b, bool swap);
-	static bool CompareHue(ofColor a, float  b, bool swap);
-	static bool CompareRedness(ofColor a, float  b, bool swap);
-	static bool CompareBlueness(ofColor a, float  b, bool swap);
-	static bool CompareGreeness(ofColor a, float  b, bool swap);
-	static bool CompareRandom(ofColor a,  float  b, bool swap);
-	static bool CompareNone(ofColor a, float  b, bool swap);
 
 	void setOrientation(ORIENTATION_TYPE _orientation);
 	void setDirection(DIRECTION_TYPE _direction);

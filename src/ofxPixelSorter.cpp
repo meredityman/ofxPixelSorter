@@ -1,4 +1,6 @@
 #include "ofxPixelSorter.h"
+#include "Comparisons.h"
+using namespace PixelComparisons;
 
 //--------------------------------------------------------------
 PixelSorter::PixelSorter()
@@ -23,8 +25,6 @@ void PixelSorter::update()
 {
 	pixelSort();
 }
-
-
 
 //--------------------------------------------------------------
 void PixelSorter::pixelSort()
@@ -222,169 +222,6 @@ PixelSorter::SortFunction PixelSorter::GetSortFunction() {
 
 }
 
-bool PixelSorter::CompareBrightness(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.getBrightness() > b.getBrightness();
-	}
-	else {
-		return a.getBrightness() < b.getBrightness();
-	}	
-}
-bool PixelSorter::CompareBrightness(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.getBrightness() >= b * 255;
-	}
-	else {
-		return a.getBrightness() <= b * 255;
-	}
-}
-
-//--------------------------------------------------------------
-
-bool PixelSorter::CompareLightness(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.getLightness() > b.getLightness();
-	}
-	else {
-		return a.getLightness() < b.getLightness();
-	}
-}
-
-bool PixelSorter::CompareLightness(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.getLightness() >= b * 255;
-	}
-	else {
-		return a.getLightness() <= b * 255;
-	}
-}
-
-//--------------------------------------------------------------
-
-
-bool PixelSorter::CompareSaturation(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.getSaturation() > b.getSaturation();
-	}
-	else {
-		return a.getSaturation() < b.getSaturation();
-	}
-}
-
-bool PixelSorter::CompareSaturation(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.getSaturation() >= b * 255;
-	}
-	else {
-		return a.getSaturation() <= b * 255;
-	}
-}
-
-//--------------------------------------------------------------
-
-
-bool PixelSorter::CompareHue(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.getHue() > b.getHue();
-	}
-	else {
-		return a.getHue() < b.getHue();
-	}
-}
-
-bool PixelSorter::CompareHue(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.getHue() >= b * 255;
-	}
-	else {
-		return a.getHue() <= b * 255;
-	}
-}
-
-//--------------------------------------------------------------
-
-bool PixelSorter::CompareRedness(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.r > b.r;
-	}
-	else {
-		return a.r < b.r;
-	}
-}
-
-bool PixelSorter::CompareRedness(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.r >= b;
-	}
-	else {
-		return a.r <= b;
-	}
-}
-
-//--------------------------------------------------------------
-
-bool PixelSorter::CompareGreeness(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.g > b.g;
-	}
-	else {
-		return a.g < b.g;
-	}
-}
-
-bool PixelSorter::CompareGreeness(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.r >= b;
-	}
-	else {
-		return a.r <= b;
-	}
-}
-//--------------------------------------------------------------
-
-bool PixelSorter::CompareBlueness(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.b > b.b;
-	}
-	else {
-		return a.b < b.b;
-	}
-}
-
-bool PixelSorter::CompareBlueness(ofColor a, float b, bool swap) {
-	if (swap) {
-		return a.b >= b;
-	}
-	else {
-		return a.b <= b;
-	}
-}
-
-//--------------------------------------------------------------
-
-bool PixelSorter::CompareRandom(ofColor a, ofColor b, bool swap) {
-	if (swap) {
-		return a.b > b.b; // BROKEN!!!!
-	}
-	else {
-		return a.b < b.b;
-	}
-}
-
-bool PixelSorter::CompareRandom(ofColor a, float b, bool swap) {
-	if (swap) {
-		return ofRandomuf() > b;
-	}
-	else {
-		return ofRandomuf() < b;
-	}
-	
-}
-
-//--------------------------------------------------------------
-bool PixelSorter::CompareNone(ofColor a, float b, bool swap) {
-	return swap;
-}
 
 //--------------------------------------------------------------
 // Start Stop Conditions types
