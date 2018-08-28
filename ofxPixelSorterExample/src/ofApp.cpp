@@ -31,7 +31,7 @@ void ofApp::update(){
 		}
 	}
 	pixelSorter.update();
-	out = pixelSorter.out;
+	out = pixelSorter.getPixels();
 	
 }
 

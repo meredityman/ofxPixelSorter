@@ -42,17 +42,17 @@ public:
 		RANDOM
 	};
 
+	ofParameterGroup params;
+
 	typedef bool (*SortFunction)(ofColor a, ofColor b);
 	typedef bool(*TestCondition)(ofColor a, float thresh);
 
 	PixelSorter();
 	~PixelSorter();
-	void setup(const ofImage in);
+	void setup(const ofPixels in);
 	void update();
-	ofImage out;
-	ofImage in;
 
-	SortFunction GetSortFunction();
+	ofPixels& getPixels();
 
 	void setOrientation(ORIENTATION_TYPE _orientation);
 	void setDirection(DIRECTION_TYPE _direction);
@@ -67,6 +67,14 @@ public:
 
 private:
 
+	ofPixels out;
+	ofPixels in;
+
+	SortFunction sortFunction;
+	TestCondition startCondition;
+	TestCondition stopCondition;
+
+	// Parameters
 	ofParameter<ORIENTATION_TYPE> orientation = ORIENTATION_TYPE::HORIZONTAL;
 	ofParameter<DIRECTION_TYPE>   direction = DIRECTION_TYPE::POSITIVE;
 	ofParameter<SORT_DIR>         sortDir = SORT_DIR::POSITIVE;
@@ -83,28 +91,17 @@ private:
 	ofParameter<unsigned int> maxSeq = 200;
 	ofParameter<unsigned int> minSeq = 20;
 
-	ofEventListener updateOnChanged() {
-		update();
-	}
-
-	void pixelSort(ofImage image);
 	void pixelSort();
 	void sortLine(vector<ofColor> & line);
 
-	bool seqSmallerThanMax (const vector<ofColor> * subLine){ 
-		if (maxSeq == 0) return true;
-		else return subLine->size() < maxSeq;
-	}
-	bool seqLargerThanMin  (const vector<ofColor> * subLine) {
-		if (minSeq == 0) return true;
-		else return subLine->size() > minSeq;
-	}
-
-
+	bool seqSmallerThanMax(const vector<ofColor> * subLine);
+	bool seqLargerThanMin(const vector<ofColor> * subLine);
 
 	bool testStartCondition(ofColor i, TestCondition testCondition);
 	bool testStopCondition(ofColor i,  TestCondition testCondition);
 
 	TestCondition GetTestCondition(bool start, bool swap);
+	SortFunction GetSortFunction();
+
 };
 

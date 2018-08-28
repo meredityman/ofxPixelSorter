@@ -2,6 +2,8 @@
 #include "ofMain.h"
 
 namespace PixelComparisons {
+
+
 	bool CompareBrightness(ofColor a, ofColor b, bool swap) {
 		if (swap) {
 			return a.getBrightness() > b.getBrightness();
@@ -165,7 +167,4 @@ namespace PixelComparisons {
 	bool CompareNone(ofColor a, float b, bool swap) {
 		return swap;
 	}
-
-
-
 }
