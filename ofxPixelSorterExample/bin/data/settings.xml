@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<group>
+	<Pixel_sorting_params>
+		<Up_swap>1</Up_swap>
+		<Down_swap>0</Down_swap>
+		<Up_threshold>0.5</Up_threshold>
+		<Down_threshold>0.785714</Down_threshold>
+		<Max_sequence_length>200</Max_sequence_length>
+		<Min_sequence_length>20</Min_sequence_length>
+	</Pixel_sorting_params>
+</group>

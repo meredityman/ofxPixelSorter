@@ -1,6 +1,4 @@
 #include "ofxPixelSorter.h"
-#include "Comparisons.h"
-using namespace PixelComparisons;
 
 //--------------------------------------------------------------
 PixelSorter::PixelSorter()
@@ -16,6 +14,37 @@ PixelSorter::~PixelSorter()
 //--------------------------------------------------------------
 void PixelSorter::setup(const ofPixels in)
 {
+	setImage(in);
+
+	params = ofParameterGroup("Pixel sorting params");
+
+	// Parameters
+	params.add(orientation.set("Orientation", (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::VERTICAL));
+	params.add(direction.set("Direction", (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE));
+	params.add(sortDir.set("Sort direction", (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE));
+	params.add(sortMode.set("Sort mode", (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::NONE));
+	params.add(startMode.set("Start mode", (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::NONE));
+	params.add(stopMode.set("Stop mode", (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::NONE));
+
+	params.add(upSwap.set("Up swap", true));
+	params.add(downSwap.set("Down swap", false));
+
+	params.add(upThresh.set("Up threshold", 0.5, 0, 1.0));
+	params.add(downThresh.set("Down threshold", 0.5, 0, 1.0));
+
+	params.add(maxSeq.set("Max sequence length", 200, 0, maxLineLength));
+	params.add(minSeq.set("Min sequence length", 20, 0, maxLineLength));
+
+	params.parameterChangedE();
+
+	ofAddListener(params.parameterChangedE(), this, &PixelSorter::parameterChanged);
+
+	update();
+}
+
+//--------------------------------------------------------------
+void PixelSorter::setImage(const ofPixels in)
+{
 	this->in = in;
 	out.allocate(in.getWidth(), in.getHeight(), in.getImageType());
 }
@@ -24,6 +53,7 @@ void PixelSorter::setup(const ofPixels in)
 void PixelSorter::update()
 {
 	pixelSort();
+	frameIsNew = true;
 }
 
 //--------------------------------------------------------------
@@ -35,32 +65,33 @@ void PixelSorter::pixelSort()
 	startCondition = GetTestCondition(true, upSwap);
 	stopCondition  = GetTestCondition(false, downSwap);
 
-	switch (orientation) {
-		case ORIENTATION_TYPE::VERTICAL:
-			for (int x = 0; x<in.getWidth(); x++) {
 
-				for (int y = 0; y<in.getHeight(); y++) {
+	switch (static_cast<ORIENTATION_TYPE>(orientation.get())) {
+		case ORIENTATION_TYPE::VERTICAL:
+			for (unsigned int x = 0; x<in.getWidth(); x++) {
+
+				for (unsigned int y = 0; y<in.getHeight(); y++) {
 					line.push_back(in.getColor(x, y));
 				}
 
 				sortLine(line);
 
-				for (int y = 0; y<in.getHeight(); y++) {
+				for (unsigned int y = 0; y<in.getHeight(); y++) {
 					out.setColor(x, y, line[y]);
 				}
 				line.clear();
 			}
 			break;
 		case ORIENTATION_TYPE::HORIZONTAL:
-			for (int y = 0; y<in.getHeight(); y++) {
+			for (unsigned int y = 0; y<in.getHeight(); y++) {
 
-				for (int x = 0; x < in.getWidth(); x++) {
+				for (unsigned int x = 0; x < in.getWidth(); x++) {
 					line.push_back(in.getColor(x, y));
 				}
 
 				sortLine(line);
 
-				for (int x = 0; x < in.getWidth(); x++) {
+				for (unsigned int x = 0; x < in.getWidth(); x++) {
 					out.setColor(x, y, line[x]);
 				}
 				line.clear();
@@ -72,7 +103,7 @@ void PixelSorter::pixelSort()
 void PixelSorter::sortLine(vector<ofColor> & line) {
 	int srt, end, inc, stop;
 
-	if (direction.get() == DIRECTION_TYPE::POSITIVE) {
+	if (static_cast<DIRECTION_TYPE>(direction.get()) == DIRECTION_TYPE::POSITIVE) {
 		srt = 0;
 		end = line.size();
 		stop = line.size() - 1;
@@ -93,18 +124,20 @@ void PixelSorter::sortLine(vector<ofColor> & line) {
 		endOfLine |= (i == stop);
 
 		if (!sorting) {
-			sorting = testStartCondition(line[i], startCondition);
+			//sorting = testStartCondition(line[i], startCondition);
+			sorting = startCondition->operator()(line[i], upThresh);
 		}
 		else {
 			if (seqSmallerThanMax(&subLine) && seqLargerThanMin(&subLine) && !endOfLine) {
-				sorting = testStopCondition(line[i], stopCondition);
+				sorting = stopCondition->operator()(line[i], downThresh);
 			}
 		}
 
 		if (sorting) {
 			subLine.push_back(line[i]);
 		} else {
-			ofSort(subLine, sortFunction);
+			//ofSort(subLine, CompareBrightness(true));
+			ofSort(subLine, std::ref(*sortFunction));
 
 			if ((DIRECTION_TYPE)direction.cast<DIRECTION_TYPE>() == DIRECTION_TYPE::POSITIVE) {
 				std::copy(subLine.begin(), subLine.end(), line.begin() + i - subLine.size());
@@ -122,71 +155,8 @@ void PixelSorter::sortLine(vector<ofColor> & line) {
 //--------------------------------------------------------------
 //
 //--------------------------------------------------------------
-void PixelSorter::setOrientation(ORIENTATION_TYPE _orientation) {
-	ofLogNotice() << "Orientation: " + ofToString((int)_orientation);
-	orientation = _orientation;
-	update();
-};
-
-void PixelSorter::setDirection(DIRECTION_TYPE _direction) {
-	ofLogNotice() << "Direction: " + ofToString((int)_direction);
-	direction = _direction;
-	update();
-};
-
-
-void PixelSorter::setSortDir(SORT_DIR _sortDir) {
-	ofLogNotice() << "Sort Dir: " + ofToString((int)_sortDir);
-	sortDir = _sortDir;
-	update();
-};
-
-void PixelSorter::setSortMode(SORT_MODE _sortMode) {
-	ofLogNotice() << "Sort Mode: " + ofToString((int)_sortMode);
-	sortMode = _sortMode;
-	update();
-};
-
-void PixelSorter::setStartMode(START_STOP_MODE  _startMode) {
-	startMode = _startMode;
-	ofLogNotice() << "Start Mode: " + ofToString(startMode);
-	update();
-};
-
-void PixelSorter::setStopMode(START_STOP_MODE  _stopMode) {
-	stopMode = _stopMode;
-	ofLogNotice() << "Stop Mode: " + ofToString(startMode);
-	update();
-};
-
-void PixelSorter::setUpThresh(float inc) {
-	upThresh = ofClamp(upThresh + inc, 0.0, 1.0);
-	ofLogNotice() << "Up Thresh: " + ofToString(upThresh);
-	update();
-};
-
-void PixelSorter::setDownThresh(float inc) {
-	downThresh = ofClamp(downThresh + inc, 0.0, 1.0);
-	ofLogNotice() << "Down Thresh: " + ofToString(downThresh);
-	update();
-};
-
-void PixelSorter::setUpSwap(bool swap) {
-	ofLogNotice() << "Up Swap: " + ofToString(swap);
-	upSwap = swap;
-	update();
-};
-
-void PixelSorter::setDownSwap(bool swap) {
-	ofLogNotice() << "Down Swap: " + ofToString(swap);
-	downSwap = swap;
-	update();
-};
-
-//--------------------------------------------------------------
-//
-//--------------------------------------------------------------
 ofPixels& PixelSorter::getPixels() { 
+	frameIsNew = false;
 	return out; 
 }
 //--------------------------------------------------------------
@@ -196,119 +166,22 @@ ofPixels& PixelSorter::getPixels() {
 // Comparision types
 //--------------------------------------------------------------
 
-PixelSorter::SortFunction PixelSorter::GetSortFunction() {
-	if (sortDir.get() == SORT_DIR::POSITIVE) {
-		switch (sortMode) {
-			case SORT_MODE::BRIGHTNESS:
-				return [](ofColor a, ofColor b) {return CompareBrightness(a, b, true); };
-			case SORT_MODE::LIGHTNESS:
-				return [](ofColor a, ofColor b) {return CompareLightness(a, b, true); };
-			case SORT_MODE::SATURATION:
-				return [](ofColor a, ofColor b) {return CompareSaturation(a, b, true); };
-			case SORT_MODE::HUE:
-				return [](ofColor a, ofColor b) {return CompareHue(a, b, true); };
-			case SORT_MODE::REDNESS:
-				return [](ofColor a, ofColor b) {return CompareRedness(a, b, true); };
-			case SORT_MODE::BLUENESS:
-				return [](ofColor a, ofColor b) {return CompareBlueness(a, b, true); };
-			case SORT_MODE::GREENESS:
-				return [](ofColor a, ofColor b) {return CompareGreeness(a, b, true); };
-			case SORT_MODE::RANDOM:
-			default:
-				return [](ofColor a, ofColor b) {return CompareRandom(a, b, true); };
-		}
-	}
-	else {
-		switch (sortMode) {
-			case SORT_MODE::BRIGHTNESS:
-				return [](ofColor a, ofColor b) {return CompareBrightness(a, b, false); };
-			case SORT_MODE::LIGHTNESS:
-				return [](ofColor a, ofColor b) {return CompareLightness(a, b, false); };
-			case SORT_MODE::SATURATION:
-				return [](ofColor a, ofColor b) {return CompareSaturation(a, b, false); };
-			case SORT_MODE::HUE:
-				return [](ofColor a, ofColor b) {return CompareHue(a, b, false); };
-			case SORT_MODE::REDNESS:
-				return [](ofColor a, ofColor b) {return CompareRedness(a, b, false); };
-			case SORT_MODE::BLUENESS:
-				return [](ofColor a, ofColor b) {return CompareBlueness(a, b, false); };
-			case SORT_MODE::GREENESS:
-				return [](ofColor a, ofColor b) {return CompareGreeness(a, b, false); };
-			case SORT_MODE::RANDOM:
-				return [](ofColor a, ofColor b) {return CompareRandom(a, b, false); };
-			default:
-				return [](ofColor a, ofColor b) {return CompareRandom(a, b, false); };
-		}
-	}
+unique_ptr<Comparator> PixelSorter::GetSortFunction() {
+	bool swap = static_cast<SORT_DIR>(sortDir.get()) == SORT_DIR::POSITIVE;
+	return GetComparitor(static_cast<COMPARITOR>(sortMode.get()), swap);
 }
 
+unique_ptr<Comparator> PixelSorter::GetTestCondition(bool start, bool swap) {
 
-//--------------------------------------------------------------
-// Start Stop Conditions types
-//--------------------------------------------------------------
-
-bool PixelSorter::testStartCondition(ofColor i, TestCondition testCondition) {
-	return (testCondition)(i, upThresh);
-}
-
-bool PixelSorter::testStopCondition(ofColor i, TestCondition testCondition) {
-	return (testCondition)(i, downThresh);
-}
-
-PixelSorter::TestCondition PixelSorter::GetTestCondition(bool start, bool swap) {
-
-	START_STOP_MODE mode;
+	COMPARITOR mode;
 	if (start) {
-		mode = startMode;
+		mode = static_cast<COMPARITOR>(startMode.get());
 	}
 	else {
-		mode = stopMode;
+		mode = static_cast<COMPARITOR>(stopMode.get());
 	}
 
-	if (swap) {
-		switch (mode) {
-			case START_STOP_MODE::BRIGHTNESS:
-				return [](ofColor a, float b) {return CompareBrightness(a, b, true); };
-			case START_STOP_MODE::LIGHTNESS:
-				return [](ofColor a, float b) {return CompareLightness(a, b, true); };
-			case START_STOP_MODE::SATURATION:
-				return [](ofColor a, float b) {return CompareSaturation(a, b, true); };
-			case START_STOP_MODE::HUE:
-				return [](ofColor a, float b) {return CompareHue(a, b, true); };
-			case START_STOP_MODE::REDNESS:
-				return [](ofColor a, float b) {return CompareRedness(a, b, true); };
-			case START_STOP_MODE::BLUENESS:
-				return [](ofColor a, float b) {return CompareBlueness(a, b, true); };
-			case START_STOP_MODE::GREENESS:
-				return [](ofColor a, float b) {return CompareGreeness(a, b, true); };
-			case START_STOP_MODE::RANDOM:
-				return [](ofColor a, float b) {return CompareRandom(a, b, true); };
-			case START_STOP_MODE::NONE:
-				return [](ofColor a, float b) {return CompareNone(a, b, true); };
-		}
-	}
-	else {
-		switch (mode) {
-			case START_STOP_MODE::BRIGHTNESS:
-				return [](ofColor a, float b) {return CompareBrightness(a, b, false); };
-			case START_STOP_MODE::LIGHTNESS:
-				return [](ofColor a, float b) {return CompareLightness(a, b, false); };
-			case START_STOP_MODE::SATURATION:
-				return [](ofColor a, float b) {return CompareSaturation(a, b, false); };
-			case START_STOP_MODE::HUE:
-				return [](ofColor a, float b) {return CompareHue(a, b, false); };
-			case START_STOP_MODE::REDNESS:
-				return [](ofColor a, float b) {return CompareRedness(a, b, false); };
-			case START_STOP_MODE::BLUENESS:
-				return [](ofColor a, float b) {return CompareBlueness(a, b, false); };
-			case START_STOP_MODE::GREENESS:
-				return [](ofColor a, float b) {return CompareGreeness(a, b, false); };
-			case START_STOP_MODE::RANDOM:
-				return [](ofColor a, float b) {return CompareRandom(a, b, false); };
-			case START_STOP_MODE::NONE:
-				return [](ofColor a, float b) {return CompareNone(a, b, false); };
-		}
-	}
+	return GetComparitor(mode, swap);
 }
 
 bool PixelSorter::seqSmallerThanMax(const vector<ofColor> * subLine) {
@@ -320,3 +193,27 @@ bool PixelSorter::seqLargerThanMin(const vector<ofColor> * subLine) {
 	else return subLine->size() > minSeq;
 }
 
+
+unique_ptr<Comparator> PixelSorter::GetComparitor(COMPARITOR mode, bool swap) {
+	switch (mode) {
+		case COMPARITOR::BRIGHTNESS:
+			return make_unique<CompareBrightness>(CompareBrightness(swap));
+		case COMPARITOR::LIGHTNESS:
+			return  make_unique<CompareLightness>(CompareLightness(swap));
+		case COMPARITOR::SATURATION:
+			return  make_unique<CompareSaturation>(CompareSaturation(swap));
+		case COMPARITOR::HUE:
+			return  make_unique<CompareHue>(CompareHue(swap));
+		case COMPARITOR::REDNESS:
+			return  make_unique<CompareRedness>(CompareRedness(swap));
+		case COMPARITOR::BLUENESS:
+			return  make_unique<CompareBlueness>(CompareBlueness(swap));
+		case COMPARITOR::GREENESS:
+			return  make_unique<CompareGreeness>(CompareGreeness(swap));
+		case COMPARITOR::RANDOM:
+			return  make_unique<CompareRandom>(CompareRandom(swap));
+		case COMPARITOR::NONE:
+		default:
+			return make_unique<CompareNone>(CompareNone(swap));
+	}
+}

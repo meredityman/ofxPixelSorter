@@ -4,6 +4,8 @@
 void ofApp::setup(){
 	ofLogToConsole();
 
+
+
 	if (useImage) {
 		img.load("ExampleImage.jpg");
 	}
@@ -16,6 +18,10 @@ void ofApp::setup(){
 	}
 
 	pixelSorter.setup(img);
+
+	gui.setup();
+	gui.add(pixelSorter.params);
+
 }
 
 //--------------------------------------------------------------
@@ -30,8 +36,11 @@ void ofApp::update(){
 			pixelSorter.update();
 		}
 	}
-	pixelSorter.update();
-	out = pixelSorter.getPixels();
+	//pixelSorter.update();
+	if (pixelSorter.isFrameNew()) {
+		out = pixelSorter.getPixels();
+	}
+
 	
 }
 
@@ -46,140 +55,141 @@ void ofApp::draw(){
 		out.draw(vid.getWidth(), 0);
 	}
 
+	gui.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	switch (key) {
 	case OF_KEY_UP:
-		pixelSorter.setOrientation( PixelSorter::ORIENTATION_TYPE::VERTICAL);
-		pixelSorter.setDirection( PixelSorter::DIRECTION_TYPE::NEGATIVE);
+		pixelSorter.orientation = (int)PixelSorter::ORIENTATION_TYPE::VERTICAL;
+		pixelSorter.direction = (int)PixelSorter::DIRECTION_TYPE::NEGATIVE;
 		break;
 	case OF_KEY_DOWN:
-		pixelSorter.setOrientation(PixelSorter::ORIENTATION_TYPE::VERTICAL);
-		pixelSorter.setDirection(PixelSorter::DIRECTION_TYPE::POSITIVE);
+		pixelSorter.orientation = (int)PixelSorter::ORIENTATION_TYPE::VERTICAL;
+		pixelSorter.direction = (int)PixelSorter::DIRECTION_TYPE::POSITIVE;
 		break;
 	case OF_KEY_LEFT:
-		pixelSorter.setOrientation(PixelSorter::ORIENTATION_TYPE::HORIZONTAL);
-		pixelSorter.setDirection(PixelSorter::DIRECTION_TYPE::NEGATIVE);
+		pixelSorter.orientation = (int)PixelSorter::ORIENTATION_TYPE::HORIZONTAL;
+		pixelSorter.direction = (int)PixelSorter::DIRECTION_TYPE::NEGATIVE;
 		break;
 	case OF_KEY_RIGHT:
-		pixelSorter.setOrientation(PixelSorter::ORIENTATION_TYPE::HORIZONTAL);
-		pixelSorter.setDirection(PixelSorter::DIRECTION_TYPE::POSITIVE);
+		pixelSorter.orientation = (int)PixelSorter::ORIENTATION_TYPE::HORIZONTAL;
+		pixelSorter.direction = (int)PixelSorter::DIRECTION_TYPE::POSITIVE;
 		break;
 	case 'q':
-		pixelSorter.setSortDir( PixelSorter::SORT_DIR::POSITIVE);
+		pixelSorter.sortDir = (int)PixelSorter::SORT_DIR::POSITIVE;
 		break;
 	case 'w':
-		pixelSorter.setSortDir(PixelSorter::SORT_DIR::NEGATIVE);
+		pixelSorter.sortDir = (int)PixelSorter::SORT_DIR::NEGATIVE;
 		break;
 
 		//-------------------------------------------------------------
 	case '1':
-		pixelSorter.setSortMode( PixelSorter::SORT_MODE::BRIGHTNESS);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::BRIGHTNESS;
 		break;
 	case '2':
-		pixelSorter.setSortMode(PixelSorter::SORT_MODE::LIGHTNESS);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::LIGHTNESS;
 		break;
 	case '3':
-		pixelSorter.setSortMode(PixelSorter::SORT_MODE::SATURATION);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::SATURATION;
 		break;
 	case '4':
-		pixelSorter.setSortMode(PixelSorter::SORT_MODE::HUE);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::HUE;
 		break;
 	case '5':
-		pixelSorter.setSortMode(PixelSorter::SORT_MODE::REDNESS);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::REDNESS;
 		break;
 	case '6':
-		pixelSorter.setSortMode(PixelSorter::SORT_MODE::BLUENESS);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::BLUENESS;
 		break;
 	case '7':
-		pixelSorter.setSortMode(PixelSorter::SORT_MODE::GREENESS);
+		pixelSorter.sortMode = (int)PixelSorter::COMPARITOR::GREENESS;
 		break;
 
 		//-------------------------------------------------------------
 	case 'z':
-		pixelSorter.setStartMode( PixelSorter::START_STOP_MODE::NONE);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::NONE;
 		break;
 	case 'x':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::BRIGHTNESS);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::BRIGHTNESS;
 		break;
 	case 'c':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::LIGHTNESS);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::LIGHTNESS;
 		break;
 	case 'v':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::SATURATION);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::SATURATION;
 		break;
 	case 'b':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::HUE);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::HUE;
 		break;
 	case 'n':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::REDNESS);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::REDNESS;
 		break;
 	case 'm':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::BLUENESS);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::BLUENESS;
 		break;
 	case ',':
-		pixelSorter.setStartMode(PixelSorter::START_STOP_MODE::GREENESS);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::GREENESS;
 		break;
 	case '.':
-		pixelSorter.setStartMode( PixelSorter::START_STOP_MODE::RANDOM);
+		pixelSorter.startMode = (int)PixelSorter::COMPARITOR::RANDOM;
 		break;
 
 	//-------------------------------------------------------------
 	case 'Z':
-		pixelSorter.setStopMode( PixelSorter::START_STOP_MODE::NONE);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::NONE;
 		break;
 	case 'X':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::BRIGHTNESS);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::BRIGHTNESS;
 		break;
 	case 'C':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::LIGHTNESS);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::LIGHTNESS;
 		break;
 	case 'V':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::SATURATION);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::SATURATION;
 		break;
 	case 'B':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::HUE);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::HUE;
 		break;
 	case 'N':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::REDNESS);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::REDNESS;
 		break;
 	case 'M':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::BLUENESS);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::BLUENESS;
 		break;
 	case '<':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::GREENESS);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::GREENESS;
 		break;
 	case '>':
-		pixelSorter.setStopMode(PixelSorter::START_STOP_MODE::RANDOM);
+		pixelSorter.stopMode = (int)PixelSorter::COMPARITOR::RANDOM;
 		break;
 
 	//-------------------------------------------------------------
 	case '-':
-		pixelSorter.setUpThresh(-0.05);
+		pixelSorter.upThresh -= 0.05;
 		break;
 	case '=':
-		pixelSorter.setUpThresh(0.05);
+		pixelSorter.upThresh += 0.05;
 		break;
 	case '_':
-		pixelSorter.setDownThresh(-0.05);
+		pixelSorter.downThresh -= 0.05;
 		break;
 	case '+':
-		pixelSorter.setDownThresh(0.05);
+		pixelSorter.downThresh += 0.05;
 		break;
 	//-------------------------------------------------------------
 	case 'a':
-		pixelSorter.setUpSwap(true);
+		pixelSorter.upSwap = true;
 		break;
 	case 's':
-		pixelSorter.setUpSwap(false);
+		pixelSorter.upSwap = false;
 		break;
 	case 'A':
-		pixelSorter.setDownSwap(true);
+		pixelSorter.downSwap = true;
 		break;
 	case 'S':
-		pixelSorter.setDownSwap(false);
+		pixelSorter.downSwap = false;
 		break;
 	}
 }
