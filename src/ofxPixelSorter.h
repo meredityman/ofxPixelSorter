@@ -79,7 +79,9 @@ private:
 
 	bool frameIsNew = false;
 
+	void setupParams();
 	void pixelSort();
+	void sortLines(vector<vector<vector<ofColor>>> & lineGroups);
 	void sortLine(vector<ofColor> & line);
 
 	bool seqSmallerThanMax(const vector<ofColor> * subLine);
@@ -90,8 +92,9 @@ private:
 	unique_ptr<Comparator> GetComparitor(COMPARITOR mode, bool swap);
 
 	void parameterChanged(ofAbstractParameter & parameter){ 
+		ofLogNotice() << params.toString();
 		update();
-		ofLogNotice() << params.toString(); 
+
 	}
 };
 

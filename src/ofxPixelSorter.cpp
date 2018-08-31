@@ -14,11 +14,14 @@ PixelSorter::~PixelSorter()
 //--------------------------------------------------------------
 void PixelSorter::setup(const ofPixels in)
 {
+	setupParams();
 	setImage(in);
-
+}
+//--------------------------------------------------------------
+void PixelSorter::setupParams() {
+	// Parameters
 	params = ofParameterGroup("Pixel sorting params");
 
-	// Parameters
 	params.add(orientation.set("Orientation", (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::VERTICAL));
 	params.add(direction.set("Direction", (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE));
 	params.add(sortDir.set("Sort direction", (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE));
@@ -38,15 +41,15 @@ void PixelSorter::setup(const ofPixels in)
 	params.parameterChangedE();
 
 	ofAddListener(params.parameterChangedE(), this, &PixelSorter::parameterChanged);
-
-	update();
 }
+
 
 //--------------------------------------------------------------
 void PixelSorter::setImage(const ofPixels in)
 {
 	this->in = in;
 	out.allocate(in.getWidth(), in.getHeight(), in.getImageType());
+	update();
 }
 
 //--------------------------------------------------------------
@@ -59,60 +62,98 @@ void PixelSorter::update()
 //--------------------------------------------------------------
 void PixelSorter::pixelSort()
 {
-	vector<ofColor> line;
-
-	sortFunction   = GetSortFunction();
+	sortFunction = GetSortFunction();
 	startCondition = GetTestCondition(true, upSwap);
-	stopCondition  = GetTestCondition(false, downSwap);
+	stopCondition = GetTestCondition(false, downSwap);
 
+	int nCores = std::thread::hardware_concurrency();
+	vector<vector<vector<ofColor>>> lineGroups;
 
-	switch (static_cast<ORIENTATION_TYPE>(orientation.get())) {
-		case ORIENTATION_TYPE::VERTICAL:
-			for (unsigned int x = 0; x<in.getWidth(); x++) {
+	out = in;
 
-				for (unsigned int y = 0; y<in.getHeight(); y++) {
-					line.push_back(in.getColor(x, y));
-				}
+	if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
+		in.rotate90To(out, 1);
+	}
+	else {
+		out = in;
+	}
 
-				sortLine(line);
+	ofLogNotice() << "W: " << out.getWidth() << " H: " << out.getHeight() << " Num: " << out.getWidth() * out.getHeight();
 
-				for (unsigned int y = 0; y<in.getHeight(); y++) {
-					out.setColor(x, y, line[y]);
-				}
-				line.clear();
+	int nLines = std::floor(out.getHeight() / nCores);
+	int remLines = out.getHeight() % nCores;
+
+	ofLogNotice() << "nCores " << nCores;
+	for (int i = 0; i < nCores; i++) {
+		ofLogNotice() << i;
+		vector<vector<ofColor>> lineGroup;
+
+		int srtLine  = i * nLines;
+		int endLine  = srtLine +  nLines;
+
+		if (i == nCores - 1) {
+			endLine += remLines;
+		}
+
+		ofLogNotice() << "Core: " << i + 1 << " SrtLine: " << srtLine << " EndLine: " << endLine ;
+
+		for (int y = srtLine; y < endLine; y++) {
+			vector<ofColor> line;
+			for (size_t x = 0; x < out.getWidth(); x++) {
+				line.push_back(out.getColor(x, y));
 			}
-			break;
-		case ORIENTATION_TYPE::HORIZONTAL:
-			for (unsigned int y = 0; y<in.getHeight(); y++) {
+			lineGroup.push_back(line);
+		}
 
-				for (unsigned int x = 0; x < in.getWidth(); x++) {
-					line.push_back(in.getColor(x, y));
-				}
+		lineGroups.push_back(lineGroup);
+	}
+	sortLines(lineGroups);
 
-				sortLine(line);
+	int y = 0;
+	for (size_t i = 0; i < lineGroups.size(); i++) {
 
-				for (unsigned int x = 0; x < in.getWidth(); x++) {
-					out.setColor(x, y, line[x]);
-				}
-				line.clear();
+		for (size_t j = 0; j < lineGroups[i].size(); j++) {
+
+			for (size_t x = 0; x < out.getWidth(); x++) {
+				out.setColor(x, y, lineGroups[i][j][x]);
 			}
-			break;
+
+			y++;
+		}
+	}
+
+	if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
+		out.rotate90(3);
+	}
+}
+//--------------------------------------------------------------
+void PixelSorter::sortLines(vector<vector<vector<ofColor>>> & lineGroups) {
+	vector<std::thread> sortThreads;
+	for (auto & lineGroup : lineGroups) {
+		for (auto & line : lineGroup) {
+			sortThreads.push_back(std::thread(&PixelSorter::sortLine, this, std::ref(line)));
+		}
+	}
+
+	for(auto &t : sortThreads) {
+		t.join();
 	}
 }
 //--------------------------------------------------------------
 void PixelSorter::sortLine(vector<ofColor> & line) {
+
 	int srt, end, inc, stop;
 
 	if (static_cast<DIRECTION_TYPE>(direction.get()) == DIRECTION_TYPE::POSITIVE) {
 		srt = 0;
 		end = line.size();
-		stop = line.size() - 1;
+		stop = end - 1;
 		inc = 1;
 	}
 	else {
 		srt = line.size() -1;
 		end = -1;
-		stop = 0;
+		stop = end + 1;
 		inc = -1;
 	}
 	
@@ -124,7 +165,6 @@ void PixelSorter::sortLine(vector<ofColor> & line) {
 		endOfLine |= (i == stop);
 
 		if (!sorting) {
-			//sorting = testStartCondition(line[i], startCondition);
 			sorting = startCondition->operator()(line[i], upThresh);
 		}
 		else {
@@ -136,7 +176,6 @@ void PixelSorter::sortLine(vector<ofColor> & line) {
 		if (sorting) {
 			subLine.push_back(line[i]);
 		} else {
-			//ofSort(subLine, CompareBrightness(true));
 			ofSort(subLine, std::ref(*sortFunction));
 
 			if ((DIRECTION_TYPE)direction.cast<DIRECTION_TYPE>() == DIRECTION_TYPE::POSITIVE) {
