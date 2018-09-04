@@ -31,5 +31,5 @@ class ofApp : public ofBaseApp{
 
 		PixelSorter pixelSorter;
 
-		const bool useImage = true;
+		bool useImage = true;
 };

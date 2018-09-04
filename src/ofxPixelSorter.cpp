@@ -1,4 +1,5 @@
 #include "ofxPixelSorter.h"
+#include "PixelSortingThread.h"
 
 //--------------------------------------------------------------
 PixelSorter::PixelSorter()
@@ -12,7 +13,7 @@ PixelSorter::~PixelSorter()
 }
 
 //--------------------------------------------------------------
-void PixelSorter::setup(const ofPixels in)
+void PixelSorter::setup(const ofPixels & in)
 {
 	setupParams();
 	setImage(in);
@@ -35,17 +36,15 @@ void PixelSorter::setupParams() {
 	params.add(upThresh.set("Up threshold", 0.5, 0, 1.0));
 	params.add(downThresh.set("Down threshold", 0.5, 0, 1.0));
 
-	params.add(maxSeq.set("Max sequence length", 200, 0, maxLineLength));
-	params.add(minSeq.set("Min sequence length", 20, 0, maxLineLength));
-
-	params.parameterChangedE();
+	params.add(maxSeq.set("Max sequence length", 400, 0, maxLineLength));
+	params.add(minSeq.set("Min sequence length", 0, 0, maxLineLength));
 
 	ofAddListener(params.parameterChangedE(), this, &PixelSorter::parameterChanged);
 }
 
 
 //--------------------------------------------------------------
-void PixelSorter::setImage(const ofPixels in)
+void PixelSorter::setImage(const ofPixels & in)
 {
 	this->in = in;
 	out.allocate(in.getWidth(), in.getHeight(), in.getImageType());
@@ -62,14 +61,9 @@ void PixelSorter::update()
 //--------------------------------------------------------------
 void PixelSorter::pixelSort()
 {
-	sortFunction = GetSortFunction();
-	startCondition = GetTestCondition(true, upSwap);
-	stopCondition = GetTestCondition(false, downSwap);
+	uint64_t srtTime = ofGetSystemTimeMillis();
 
 	int nCores = std::thread::hardware_concurrency();
-	vector<vector<vector<ofColor>>> lineGroups;
-
-	out = in;
 
 	if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
 		in.rotate90To(out, 1);
@@ -78,15 +72,13 @@ void PixelSorter::pixelSort()
 		out = in;
 	}
 
-	ofLogNotice() << "W: " << out.getWidth() << " H: " << out.getHeight() << " Num: " << out.getWidth() * out.getHeight();
 
+	vector<unique_ptr<PixelSortingThread>> threads;
 	int nLines = std::floor(out.getHeight() / nCores);
 	int remLines = out.getHeight() % nCores;
 
-	ofLogNotice() << "nCores " << nCores;
+
 	for (int i = 0; i < nCores; i++) {
-		ofLogNotice() << i;
-		vector<vector<ofColor>> lineGroup;
 
 		int srtLine  = i * nLines;
 		int endLine  = srtLine +  nLines;
@@ -95,101 +87,43 @@ void PixelSorter::pixelSort()
 			endLine += remLines;
 		}
 
-		ofLogNotice() << "Core: " << i + 1 << " SrtLine: " << srtLine << " EndLine: " << endLine ;
+		unique_ptr<PixelSortingThread> newThread = make_unique<PixelSortingThread>();
+		newThread->setLines(srtLine, endLine, out);
+		newThread->setParams(params);
 
-		for (int y = srtLine; y < endLine; y++) {
-			vector<ofColor> line;
-			for (size_t x = 0; x < out.getWidth(); x++) {
-				line.push_back(out.getColor(x, y));
-			}
-			lineGroup.push_back(line);
-		}
-
-		lineGroups.push_back(lineGroup);
+		threads.push_back(std::move(newThread));
+		threads.back()->startThread();		
 	}
-	sortLines(lineGroups);
 
-	int y = 0;
-	for (size_t i = 0; i < lineGroups.size(); i++) {
+	uint64_t getLinesTime = ofGetSystemTimeMillis();
 
-		for (size_t j = 0; j < lineGroups[i].size(); j++) {
+	// Wait for threads to finish
 
+	for (auto &t : threads) {
+		t->waitForThread(false, -1);
+
+		ofLogNotice() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
+
+		for (size_t y = t->srtLine; y < t->endLine; y++) {
+			
 			for (size_t x = 0; x < out.getWidth(); x++) {
-				out.setColor(x, y, lineGroups[i][j][x]);
+				out.setColor(x, y, t->getColor(x, y));
 			}
-
-			y++;
 		}
 	}
+
+	uint64_t sortingTime = ofGetSystemTimeMillis();
+
 
 	if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
 		out.rotate90(3);
 	}
+
+	ofLogNotice() << "GetLines time: " << getLinesTime - srtTime << "ms";
+	ofLogNotice() << "Sorting time: " << sortingTime - getLinesTime << "ms";
+	ofLogNotice() << "Total Execution time: " << ofGetSystemTimeMillis() - srtTime << "ms";
 }
-//--------------------------------------------------------------
-void PixelSorter::sortLines(vector<vector<vector<ofColor>>> & lineGroups) {
-	vector<std::thread> sortThreads;
-	for (auto & lineGroup : lineGroups) {
-		for (auto & line : lineGroup) {
-			sortThreads.push_back(std::thread(&PixelSorter::sortLine, this, std::ref(line)));
-		}
-	}
 
-	for(auto &t : sortThreads) {
-		t.join();
-	}
-}
-//--------------------------------------------------------------
-void PixelSorter::sortLine(vector<ofColor> & line) {
-
-	int srt, end, inc, stop;
-
-	if (static_cast<DIRECTION_TYPE>(direction.get()) == DIRECTION_TYPE::POSITIVE) {
-		srt = 0;
-		end = line.size();
-		stop = end - 1;
-		inc = 1;
-	}
-	else {
-		srt = line.size() -1;
-		end = -1;
-		stop = end + 1;
-		inc = -1;
-	}
-	
-	bool sorting = false;
-	bool endOfLine = false;
-
-	vector<ofColor> subLine;
-	for (int i = srt; i != end; i += inc) {
-		endOfLine |= (i == stop);
-
-		if (!sorting) {
-			sorting = startCondition->operator()(line[i], upThresh);
-		}
-		else {
-			if (seqSmallerThanMax(&subLine) && seqLargerThanMin(&subLine) && !endOfLine) {
-				sorting = stopCondition->operator()(line[i], downThresh);
-			}
-		}
-
-		if (sorting) {
-			subLine.push_back(line[i]);
-		} else {
-			ofSort(subLine, std::ref(*sortFunction));
-
-			if ((DIRECTION_TYPE)direction.cast<DIRECTION_TYPE>() == DIRECTION_TYPE::POSITIVE) {
-				std::copy(subLine.begin(), subLine.end(), line.begin() + i - subLine.size());
-			}
-			else {
-				std::reverse(subLine.begin(), subLine.end());
-				std::copy(subLine.begin(), subLine.end(), line.begin() + i);
-			}
-
-			subLine.clear();
-		}
-	}
-};
 
 //--------------------------------------------------------------
 //
@@ -201,58 +135,4 @@ ofPixels& PixelSorter::getPixels() {
 //--------------------------------------------------------------
 
 
-//--------------------------------------------------------------
-// Comparision types
-//--------------------------------------------------------------
 
-unique_ptr<Comparator> PixelSorter::GetSortFunction() {
-	bool swap = static_cast<SORT_DIR>(sortDir.get()) == SORT_DIR::POSITIVE;
-	return GetComparitor(static_cast<COMPARITOR>(sortMode.get()), swap);
-}
-
-unique_ptr<Comparator> PixelSorter::GetTestCondition(bool start, bool swap) {
-
-	COMPARITOR mode;
-	if (start) {
-		mode = static_cast<COMPARITOR>(startMode.get());
-	}
-	else {
-		mode = static_cast<COMPARITOR>(stopMode.get());
-	}
-
-	return GetComparitor(mode, swap);
-}
-
-bool PixelSorter::seqSmallerThanMax(const vector<ofColor> * subLine) {
-	if (maxSeq == 0) return true;
-	else return subLine->size() < maxSeq;
-}
-bool PixelSorter::seqLargerThanMin(const vector<ofColor> * subLine) {
-	if (minSeq == 0) return true;
-	else return subLine->size() > minSeq;
-}
-
-
-unique_ptr<Comparator> PixelSorter::GetComparitor(COMPARITOR mode, bool swap) {
-	switch (mode) {
-		case COMPARITOR::BRIGHTNESS:
-			return make_unique<CompareBrightness>(CompareBrightness(swap));
-		case COMPARITOR::LIGHTNESS:
-			return  make_unique<CompareLightness>(CompareLightness(swap));
-		case COMPARITOR::SATURATION:
-			return  make_unique<CompareSaturation>(CompareSaturation(swap));
-		case COMPARITOR::HUE:
-			return  make_unique<CompareHue>(CompareHue(swap));
-		case COMPARITOR::REDNESS:
-			return  make_unique<CompareRedness>(CompareRedness(swap));
-		case COMPARITOR::BLUENESS:
-			return  make_unique<CompareBlueness>(CompareBlueness(swap));
-		case COMPARITOR::GREENESS:
-			return  make_unique<CompareGreeness>(CompareGreeness(swap));
-		case COMPARITOR::RANDOM:
-			return  make_unique<CompareRandom>(CompareRandom(swap));
-		case COMPARITOR::NONE:
-		default:
-			return make_unique<CompareNone>(CompareNone(swap));
-	}
-}
