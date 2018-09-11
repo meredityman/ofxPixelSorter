@@ -48,6 +48,9 @@ xcuserdata
 *.pdb
 *.ilk
 *.aps
+*.VC.db*
+*.vcxproj*
+*/.vs
 ipch/
 
 # Eclipse
