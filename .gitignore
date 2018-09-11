@@ -48,8 +48,9 @@ xcuserdata
 *.pdb
 *.ilk
 *.aps
-*.VC.db*
+*.VC*
 *.vcxproj*
+*.sln
 */.vs
 ipch/
 
