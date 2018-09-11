@@ -1,6 +1,6 @@
 #pragma once
 #include "ofMain.h"
-
+#include "PixelSortingThread.h"
 
 class PixelSorter
 {
@@ -26,9 +26,7 @@ public:
 
 	ofParameter<unsigned int> maxSeq;
 	ofParameter<unsigned int> minSeq;
-	
-	PixelSorter();
-	~PixelSorter();
+
 	void setup(const ofPixels & in);
 	void update();
 
@@ -39,20 +37,21 @@ public:
 
 
 private:
-
-	ofPixels out;
 	ofPixels in;
+	ofPixels out;
+
+	vector<unique_ptr<PixelSortingThread>> threads;
 
 	bool frameIsNew = false;
 
 	void setupParams();
+	void setupThreads();
 	void pixelSort();
 
 
 	void parameterChanged(ofAbstractParameter & parameter){ 
 		ofLogNotice() << params.toString();
 		update();
-
 	}
 };
 

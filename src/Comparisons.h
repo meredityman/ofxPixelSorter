@@ -18,7 +18,7 @@ namespace PixelComparisons {
 		NEGATIVE
 	};
 
-	enum class  COMPARITOR {
+	enum class  COMPARATOR {
 		BRIGHTNESS,
 		LIGHTNESS,
 		SATURATION,
@@ -29,6 +29,16 @@ namespace PixelComparisons {
 		RANDOM,
 		NONE
 	};
+
+	//template<COMPARATOR C>
+	//class Comparator {
+
+	//};
+
+	//class  Comparator : public Comparator<COMPARATOR::BRIGHTNESS> {
+
+
+	//};
 
 	class Comparator {
 	protected:

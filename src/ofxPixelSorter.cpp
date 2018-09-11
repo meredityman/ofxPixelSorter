@@ -1,16 +1,4 @@
 #include "ofxPixelSorter.h"
-#include "PixelSortingThread.h"
-
-//--------------------------------------------------------------
-PixelSorter::PixelSorter()
-{
-}
-
-
-//--------------------------------------------------------------
-PixelSorter::~PixelSorter()
-{
-}
 
 //--------------------------------------------------------------
 void PixelSorter::setup(const ofPixels & in)
@@ -26,9 +14,9 @@ void PixelSorter::setupParams() {
 	params.add(orientation.set("Orientation", (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::VERTICAL));
 	params.add(direction.set("Direction", (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE));
 	params.add(sortDir.set("Sort direction", (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE));
-	params.add(sortMode.set("Sort mode", (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::NONE));
-	params.add(startMode.set("Start mode", (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::NONE));
-	params.add(stopMode.set("Stop mode", (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::BRIGHTNESS, (int)COMPARITOR::NONE));
+	params.add(sortMode.set("Sort mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE));
+	params.add(startMode.set("Start mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE));
+	params.add(stopMode.set("Stop mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE));
 
 	params.add(upSwap.set("Up swap", true));
 	params.add(downSwap.set("Down swap", false));
@@ -48,6 +36,9 @@ void PixelSorter::setImage(const ofPixels & in)
 {
 	this->in = in;
 	out.allocate(in.getWidth(), in.getHeight(), in.getImageType());
+
+	setupThreads();
+
 	update();
 }
 
@@ -57,52 +48,57 @@ void PixelSorter::update()
 	pixelSort();
 	frameIsNew = true;
 }
-
 //--------------------------------------------------------------
-void PixelSorter::pixelSort()
-{
-	uint64_t srtTime = ofGetSystemTimeMillis();
+void PixelSorter::setupThreads() {
 
 	int nCores = std::thread::hardware_concurrency();
 
-	if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
-		in.rotate90To(out, 1);
-	}
-	else {
-		out = in;
-	}
-
-
-	vector<unique_ptr<PixelSortingThread>> threads;
-	int nLines = std::floor(out.getHeight() / nCores);
-	int remLines = out.getHeight() % nCores;
-
+	int nLines = std::floor(in.getHeight() / nCores);
+	int remLines = in.getHeight() % nCores;
 
 	for (int i = 0; i < nCores; i++) {
 
-		int srtLine  = i * nLines;
-		int endLine  = srtLine +  nLines;
+		int srtLine = i * nLines;
+		int endLine = srtLine + nLines;
 
 		if (i == nCores - 1) {
 			endLine += remLines;
 		}
 
 		unique_ptr<PixelSortingThread> newThread = make_unique<PixelSortingThread>();
-		newThread->setLines(srtLine, endLine, out);
-		newThread->setParams(params);
+		newThread->setLines(srtLine, endLine, in);
 
 		threads.push_back(std::move(newThread));
-		threads.back()->startThread();		
+		threads.back()->startThread();
+	}
+}
+
+//--------------------------------------------------------------
+void PixelSorter::pixelSort()
+{
+	uint64_t srtTime = ofGetSystemTimeMillis();
+
+
+	//if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
+	//	in.rotate90To(out, 1);
+	//}
+	//else {
+	//	out = in;
+	//}
+
+	for (auto &t : threads) {
+		t->setParams(params);
+		t->startThread();		
 	}
 
-	uint64_t getLinesTime = ofGetSystemTimeMillis();
+	uint64_t getLinesTime = ofGetSystemTimeMillis(); 
 
 	// Wait for threads to finish
 
 	for (auto &t : threads) {
 		t->waitForThread(false, -1);
 
-		ofLogNotice() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
+		//ofLogNotice() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
 
 		for (size_t y = t->srtLine; y < t->endLine; y++) {
 			
@@ -115,9 +111,9 @@ void PixelSorter::pixelSort()
 	uint64_t sortingTime = ofGetSystemTimeMillis();
 
 
-	if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
-		out.rotate90(3);
-	}
+	//if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
+	//	out.rotate90(3);
+	//}
 
 	ofLogNotice() << "GetLines time: " << getLinesTime - srtTime << "ms";
 	ofLogNotice() << "Sorting time: " << sortingTime - getLinesTime << "ms";

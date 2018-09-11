@@ -12,7 +12,7 @@ void PixelSortingThread::setLines(int _srtLine, int _endLine, const ofPixels & o
 		for (size_t x = 0; x < out.getWidth(); x++) {
 			line.push_back(out.getColor(x, y));
 		}
-		lines.push_back(line);
+		orig_lines.push_back(line);
 	}
 }
 
@@ -20,9 +20,9 @@ void PixelSortingThread::setParams(ofParameterGroup &params) {
 	orientation = static_cast<ORIENTATION_TYPE>(params.getInt("Orientation").get());
 	direction   = static_cast<DIRECTION_TYPE>(params.getInt("Direction").get());
 	sortDir     = static_cast<SORT_DIR>(params.getInt("Sort direction").get());
-	sortMode    = static_cast<COMPARITOR>(params.getInt("Sort mode").get());
-	startMode   = static_cast<COMPARITOR>(params.getInt("Start mode").get());
-	stopMode    = static_cast<COMPARITOR>(params.getInt("Stop mode").get());
+	sortMode    = static_cast<COMPARATOR>(params.getInt("Sort mode").get());
+	startMode   = static_cast<COMPARATOR>(params.getInt("Start mode").get());
+	stopMode    = static_cast<COMPARATOR>(params.getInt("Stop mode").get());
 
 	upSwap   = params.getBool("Up swap").get();
 	downSwap = params.getBool("Down swap").get();
@@ -55,6 +55,7 @@ void PixelSortingThread::setParams(ofParameterGroup &params) {
 
 void PixelSortingThread::threadedFunction()
 {
+	out_lines = vector<vector<ofColor>>(orig_lines);
 	sortLines();
 }
 
@@ -62,7 +63,7 @@ void PixelSortingThread::threadedFunction()
 void PixelSortingThread::sortLines() {
 	uint64_t srtTime = ofGetSystemTimeMicros();
 
-	for (auto & line : lines) {
+	for (auto & line : out_lines) {
 		uint64_t lineTime = ofGetSystemTimeMicros();
 
 		sortLine(line);
@@ -75,8 +76,8 @@ void PixelSortingThread::sortLines() {
 //--------------------------------------------------------------
 void PixelSortingThread::sortLine(vector<ofColor> & line) {
 
-	bool sorting = false;
-	bool endOfLine = false;
+	sorting = false;
+	endOfLine = false;
 
 	vector<ofColor> subLine;
 	for (int i = srt; i != end; i += inc) {
@@ -146,36 +147,36 @@ unique_ptr<Comparator> PixelSortingThread::GetSortFunction() {
 
 unique_ptr<Comparator> PixelSortingThread::GetTestCondition(bool start, bool swap) {
 
-	COMPARITOR mode;
+	COMPARATOR mode;
 	if (start) {
-		mode = static_cast<COMPARITOR>(startMode);
+		mode = static_cast<COMPARATOR>(startMode);
 	}
 	else {
-		mode = static_cast<COMPARITOR>(stopMode);
+		mode = static_cast<COMPARATOR>(stopMode);
 	}
 
 	return GetComparitor(mode, swap);
 }
 
-unique_ptr<Comparator> PixelSortingThread::GetComparitor(COMPARITOR mode, bool swap) {
+unique_ptr<Comparator> PixelSortingThread::GetComparitor(COMPARATOR mode, bool swap) {
 	switch (mode) {
-	case COMPARITOR::BRIGHTNESS:
+	case COMPARATOR::BRIGHTNESS:
 		return make_unique<CompareBrightness>(CompareBrightness(swap));
-	case COMPARITOR::LIGHTNESS:
+	case COMPARATOR::LIGHTNESS:
 		return  make_unique<CompareLightness>(CompareLightness(swap));
-	case COMPARITOR::SATURATION:
+	case COMPARATOR::SATURATION:
 		return  make_unique<CompareSaturation>(CompareSaturation(swap));
-	case COMPARITOR::HUE:
+	case COMPARATOR::HUE:
 		return  make_unique<CompareHue>(CompareHue(swap));
-	case COMPARITOR::REDNESS:
+	case COMPARATOR::REDNESS:
 		return  make_unique<CompareRedness>(CompareRedness(swap));
-	case COMPARITOR::BLUENESS:
+	case COMPARATOR::BLUENESS:
 		return  make_unique<CompareBlueness>(CompareBlueness(swap));
-	case COMPARITOR::GREENESS:
+	case COMPARATOR::GREENESS:
 		return  make_unique<CompareGreeness>(CompareGreeness(swap));
-	case COMPARITOR::RANDOM:
+	case COMPARATOR::RANDOM:
 		return  make_unique<CompareRandom>(CompareRandom(swap));
-	case COMPARITOR::NONE:
+	case COMPARATOR::NONE:
 	default:
 		return make_unique<CompareNone>(CompareNone(swap));
 	}

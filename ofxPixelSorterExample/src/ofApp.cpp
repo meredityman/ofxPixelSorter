@@ -104,83 +104,83 @@ void ofApp::keyPressed(int key){
 
 		//-------------------------------------------------------------
 	case '1':
-		pixelSorter.sortMode = (int)COMPARITOR::BRIGHTNESS;
+		pixelSorter.sortMode = (int)COMPARATOR::BRIGHTNESS;
 		break;
 	case '2':
-		pixelSorter.sortMode = (int)COMPARITOR::LIGHTNESS;
+		pixelSorter.sortMode = (int)COMPARATOR::LIGHTNESS;
 		break;
 	case '3':
-		pixelSorter.sortMode = (int)COMPARITOR::SATURATION;
+		pixelSorter.sortMode = (int)COMPARATOR::SATURATION;
 		break;
 	case '4':
-		pixelSorter.sortMode = (int)COMPARITOR::HUE;
+		pixelSorter.sortMode = (int)COMPARATOR::HUE;
 		break;
 	case '5':
-		pixelSorter.sortMode = (int)COMPARITOR::REDNESS;
+		pixelSorter.sortMode = (int)COMPARATOR::REDNESS;
 		break;
 	case '6':
-		pixelSorter.sortMode = (int)COMPARITOR::BLUENESS;
+		pixelSorter.sortMode = (int)COMPARATOR::BLUENESS;
 		break;
 	case '7':
-		pixelSorter.sortMode = (int)COMPARITOR::GREENESS;
+		pixelSorter.sortMode = (int)COMPARATOR::GREENESS;
 		break;
 
 		//-------------------------------------------------------------
 	case 'z':
-		pixelSorter.startMode = (int)COMPARITOR::NONE;
+		pixelSorter.startMode = (int)COMPARATOR::NONE;
 		break;
 	case 'x':
-		pixelSorter.startMode = (int)COMPARITOR::BRIGHTNESS;
+		pixelSorter.startMode = (int)COMPARATOR::BRIGHTNESS;
 		break;
 	case 'c':
-		pixelSorter.startMode = (int)COMPARITOR::LIGHTNESS;
+		pixelSorter.startMode = (int)COMPARATOR::LIGHTNESS;
 		break;
 	case 'v':
-		pixelSorter.startMode = (int)COMPARITOR::SATURATION;
+		pixelSorter.startMode = (int)COMPARATOR::SATURATION;
 		break;
 	case 'b':
-		pixelSorter.startMode = (int)COMPARITOR::HUE;
+		pixelSorter.startMode = (int)COMPARATOR::HUE;
 		break;
 	case 'n':
-		pixelSorter.startMode = (int)COMPARITOR::REDNESS;
+		pixelSorter.startMode = (int)COMPARATOR::REDNESS;
 		break;
 	case 'm':
-		pixelSorter.startMode = (int)COMPARITOR::BLUENESS;
+		pixelSorter.startMode = (int)COMPARATOR::BLUENESS;
 		break;
 	case ',':
-		pixelSorter.startMode = (int)COMPARITOR::GREENESS;
+		pixelSorter.startMode = (int)COMPARATOR::GREENESS;
 		break;
 	case '.':
-		pixelSorter.startMode = (int)COMPARITOR::RANDOM;
+		pixelSorter.startMode = (int)COMPARATOR::RANDOM;
 		break;
 
 	//-------------------------------------------------------------
 	case 'Z':
-		pixelSorter.stopMode = (int)COMPARITOR::NONE;
+		pixelSorter.stopMode = (int)COMPARATOR::NONE;
 		break;
 	case 'X':
-		pixelSorter.stopMode = (int)COMPARITOR::BRIGHTNESS;
+		pixelSorter.stopMode = (int)COMPARATOR::BRIGHTNESS;
 		break;
 	case 'C':
-		pixelSorter.stopMode = (int)COMPARITOR::LIGHTNESS;
+		pixelSorter.stopMode = (int)COMPARATOR::LIGHTNESS;
 		break;
 	case 'V':
-		pixelSorter.stopMode = (int)COMPARITOR::SATURATION;
+		pixelSorter.stopMode = (int)COMPARATOR::SATURATION;
 		break;
 	case 'B':
-		pixelSorter.stopMode = (int)COMPARITOR::HUE;
+		pixelSorter.stopMode = (int)COMPARATOR::HUE;
 		break;
 	case 'N':
-		pixelSorter.stopMode = (int)COMPARITOR::REDNESS;
+		pixelSorter.stopMode = (int)COMPARATOR::REDNESS;
 		break;
 	case 'M':
-		pixelSorter.stopMode = (int)COMPARITOR::BLUENESS;
+		pixelSorter.stopMode = (int)COMPARATOR::BLUENESS;
 		break;
 	case '<':
-		pixelSorter.stopMode = (int)COMPARITOR::GREENESS;
+		pixelSorter.stopMode = (int)COMPARATOR::GREENESS;
 		break;
 	case '>':
-		pixelSorter.stopMode = (int)COMPARITOR::RANDOM;
+		pixelSorter.stopMode = (int)COMPARATOR::RANDOM;
 		break;
 
 	//-------------------------------------------------------------

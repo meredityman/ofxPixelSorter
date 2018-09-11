@@ -8,15 +8,13 @@ class PixelSortingThread : public ofThread
 {
 public:
 
-
-
 	void setLines(int _srtLine, int _endLine, const ofPixels & out);
 	void setParams(ofParameterGroup &params);
 
 	void threadedFunction();
 
 	ofColor getColor(int x, int y) const {
-		return lines[y - srtLine][x];
+		return out_lines[y - srtLine][x];
 	}
 
 	int srtLine;
@@ -31,8 +29,8 @@ public:
 	}
 
 private:
-	vector<vector<ofColor>> lines;
-
+	vector<vector<ofColor>> orig_lines;
+	vector<vector<ofColor>> out_lines;
 
 	void sortLines();
 	void sortLine(vector<ofColor> & line);
@@ -47,7 +45,7 @@ private:
 
 	unique_ptr<Comparator> GetTestCondition(bool start, bool swap);
 	unique_ptr<Comparator> GetSortFunction();
-	unique_ptr<Comparator> GetComparitor(COMPARITOR mode, bool swap);
+	unique_ptr<Comparator> GetComparitor(COMPARATOR mode, bool swap);
 
 	int srt;
 	int end;
@@ -55,12 +53,15 @@ private:
 	int stp;
 	int lineLength;
 
+	bool sorting = false;
+	bool endOfLine = false;
+
 	ORIENTATION_TYPE orientation;
 	DIRECTION_TYPE direction;
 	SORT_DIR sortDir;
-	COMPARITOR sortMode;
-	COMPARITOR startMode;
-	COMPARITOR stopMode;
+	COMPARATOR sortMode;
+	COMPARATOR startMode;
+	COMPARATOR stopMode;
 
 	bool upSwap;
 	bool downSwap;
