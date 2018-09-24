@@ -16,25 +16,10 @@ void PixelSortingThread::setLines(int _srtLine, int _endLine, const ofPixels & o
 	}
 }
 
-void PixelSortingThread::setParams(ofParameterGroup &params) {
-	orientation = static_cast<ORIENTATION_TYPE>(params.getInt("Orientation").get());
-	direction   = static_cast<DIRECTION_TYPE>(params.getInt("Direction").get());
-	sortDir     = static_cast<SORT_DIR>(params.getInt("Sort direction").get());
-	sortMode    = static_cast<COMPARATOR>(params.getInt("Sort mode").get());
-	startMode   = static_cast<COMPARATOR>(params.getInt("Start mode").get());
-	stopMode    = static_cast<COMPARATOR>(params.getInt("Stop mode").get());
+void PixelSortingThread::setParams(PixelSorterSettings settings) {
+	this->settings = settings;
 
-	upSwap   = params.getBool("Up swap").get();
-	downSwap = params.getBool("Down swap").get();
-
-	upThresh   = params.getFloat("Up threshold").get();
-	downThresh = params.getFloat("Down threshold").get();
-
-	maxSeq = params.getInt("Max sequence length").get();
-	minSeq = params.getInt("Min sequence length").get();
-
-
-	if (direction == DIRECTION_TYPE::POSITIVE) {
+	if (settings.direction == PixelSorterSettings::DIRECTION_TYPE::POSITIVE) {
 		srt = 0;
 		end = lineLength;
 		stp = end - 1;
@@ -48,8 +33,8 @@ void PixelSortingThread::setParams(ofParameterGroup &params) {
 	}
 
 	sortFunctions.sortFunction   = GetSortFunction();
-	sortFunctions.startCondition = GetTestCondition(true, upSwap);
-	sortFunctions.stopCondition  = GetTestCondition(false, downSwap);
+	sortFunctions.startCondition = GetTestCondition(true, settings.upSwap);
+	sortFunctions.stopCondition  = GetTestCondition(false, settings.downSwap);
 
 }
 
@@ -86,15 +71,15 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 		// If already Sorting
 		if (sorting) {
 			// If force stop
-			if (endOfLine || subLine.size() == maxSeq) {
+			if (endOfLine || subLine.size() == settings.maxSeq) {
 				sorting = false;
 
 				if (subLine.size() > 1) {
 					sortSubLine(subLine, line, i);
 				}
 			}
-			else if (subLine.size() >= minSeq) {
-				if (sortFunctions.stopCondition->operator()(line[i], downThresh)) {
+			else if (subLine.size() >= settings.minSeq) {
+				if (sortFunctions.stopCondition->operator()(line[i], settings.downThresh)) {
 					sorting = false;
 
 					if (subLine.size() > 1) {
@@ -112,7 +97,7 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 		}
 		// If not already Sorting
 		else {
-			if (sortFunctions.startCondition->operator()(line[i], upThresh)) {
+			if (sortFunctions.startCondition->operator()(line[i], settings.upThresh)) {
 				sorting = true;
 				subLine.push_back(line[i]);
 			}
@@ -124,7 +109,7 @@ void PixelSortingThread::sortSubLine(vector<ofColor> & subLine, vector<ofColor> 
 	std::sort(subLine.begin(), subLine.end(), std::ref(*sortFunctions.sortFunction));
 
 
-	if (direction == DIRECTION_TYPE::POSITIVE) {
+	if (settings.direction == PixelSorterSettings::DIRECTION_TYPE::POSITIVE) {
 		std::copy(subLine.begin(), subLine.end(), line.begin() + i - subLine.size());
 	}
 	else {
@@ -140,42 +125,42 @@ void PixelSortingThread::sortSubLine(vector<ofColor> & subLine, vector<ofColor> 
 //--------------------------------------------------------------
 
 unique_ptr<Comparator> PixelSortingThread::GetSortFunction() {
-	bool swap = sortDir == SORT_DIR::POSITIVE;
-	return GetComparitor(sortMode, swap);
+	bool swap = settings.sortDir == PixelSorterSettings::SORT_DIR::POSITIVE;
+	return GetComparitor(settings.sortMode, swap);
 }
 
 unique_ptr<Comparator> PixelSortingThread::GetTestCondition(bool start, bool swap) {
 
-	COMPARATOR mode;
+	PixelSorterSettings::COMPARATOR mode;
 	if (start) {
-		mode = static_cast<COMPARATOR>(startMode);
+		mode = static_cast<PixelSorterSettings::COMPARATOR>(settings.startMode);
 	}
 	else {
-		mode = static_cast<COMPARATOR>(stopMode);
+		mode = static_cast<PixelSorterSettings::COMPARATOR>(settings.stopMode);
 	}
 
 	return GetComparitor(mode, swap);
 }
 
-unique_ptr<Comparator> PixelSortingThread::GetComparitor(COMPARATOR mode, bool swap) {
+unique_ptr<Comparator> PixelSortingThread::GetComparitor(PixelSorterSettings::COMPARATOR mode, bool swap) {
 	switch (mode) {
-	case COMPARATOR::BRIGHTNESS:
+	case PixelSorterSettings::COMPARATOR::BRIGHTNESS:
 		return make_unique<CompareBrightness>(CompareBrightness(swap));
-	case COMPARATOR::LIGHTNESS:
+	case PixelSorterSettings::COMPARATOR::LIGHTNESS:
 		return  make_unique<CompareLightness>(CompareLightness(swap));
-	case COMPARATOR::SATURATION:
+	case PixelSorterSettings::COMPARATOR::SATURATION:
 		return  make_unique<CompareSaturation>(CompareSaturation(swap));
-	case COMPARATOR::HUE:
+	case PixelSorterSettings::COMPARATOR::HUE:
 		return  make_unique<CompareHue>(CompareHue(swap));
-	case COMPARATOR::REDNESS:
+	case PixelSorterSettings::COMPARATOR::REDNESS:
 		return  make_unique<CompareRedness>(CompareRedness(swap));
-	case COMPARATOR::BLUENESS:
+	case PixelSorterSettings::COMPARATOR::BLUENESS:
 		return  make_unique<CompareBlueness>(CompareBlueness(swap));
-	case COMPARATOR::GREENESS:
+	case PixelSorterSettings::COMPARATOR::GREENESS:
 		return  make_unique<CompareGreeness>(CompareGreeness(swap));
-	case COMPARATOR::RANDOM:
+	case PixelSorterSettings::COMPARATOR::RANDOM:
 		return  make_unique<CompareRandom>(CompareRandom(swap));
-	case COMPARATOR::NONE:
+	case PixelSorterSettings::COMPARATOR::NONE:
 	default:
 		return make_unique<CompareNone>(CompareNone(swap));
 	}

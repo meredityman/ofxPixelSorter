@@ -3,34 +3,6 @@
 
 namespace PixelComparisons {
 
-	enum class ORIENTATION_TYPE {
-		HORIZONTAL,
-		VERTICAL
-	};
-
-	enum class DIRECTION_TYPE {
-		POSITIVE,
-		NEGATIVE
-	};
-
-	enum class SORT_DIR {
-		POSITIVE,
-		NEGATIVE
-	};
-
-	enum class  COMPARATOR {
-		BRIGHTNESS,
-		LIGHTNESS,
-		SATURATION,
-		HUE,
-		REDNESS,
-		BLUENESS,
-		GREENESS,
-		RANDOM,
-		NONE
-	};
-
-
 	class Comparator {
 	protected:
 		bool _swap;

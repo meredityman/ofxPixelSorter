@@ -1,60 +1,39 @@
 #pragma once
 #include "ofMain.h"
 #include "PixelSortingThread.h"
+#include "PixelSorterSettings.h"
 
 class PixelSorter
 {
 public:
 
-	const int maxLineLength = 5120;
-
-	// Parameters
-	ofParameterGroup params;
-
-	ofParameter<int> orientation;
-	ofParameter<int> direction;
-	ofParameter<int> sortDir;
-	ofParameter<int> sortMode;
-	ofParameter<int> startMode;
-	ofParameter<int> stopMode;
-
-	ofParameter<bool> upSwap;
-	ofParameter<bool> downSwap;
-
-	ofParameter<float> upThresh;
-	ofParameter<float> downThresh;
-
-	ofParameter<unsigned int> maxSeq;
-	ofParameter<unsigned int> minSeq;
-
 	void setup(const ofPixels & in);
+	void setImage(const ofPixels & in);
+
 	void update();
 
+	bool isFrameNew() { return frameIsNew; }
 	ofPixels& getPixels();
 
-	void setImage(const ofPixels & in);
-	bool isFrameNew() { return frameIsNew; }
 
 	bool isSetup() const {
 		return _isSetup;
 	};
 
 private:
-	ofPixels in;
-	ofPixels out;
-	bool _isSetup = false;
-
-	vector<unique_ptr<PixelSortingThread>> threads;
-
-	bool frameIsNew = false;
 
 	void setupParams();
 	void setupThreads();
 	void pixelSort();
 
-	void parameterChanged(ofAbstractParameter & parameter){ 
-		ofLogNotice() << params.toString();
-		update();
-	}
+	PixelSorterSettings settings;
+	ofPixels in;
+	ofPixels out;
+
+	bool _isSetup = false;
+	bool frameIsNew = false;
+
+	vector<unique_ptr<PixelSortingThread>> threads;	
+	
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "ofMain.h"
 #include "Comparisons.h"
+#include "PixelSorterSettings.h"
 
 using namespace PixelComparisons;
 
@@ -9,7 +10,7 @@ class PixelSortingThread : public ofThread
 public:
 
 	void setLines(int _srtLine, int _endLine, const ofPixels & out);
-	void setParams(ofParameterGroup &params);
+	void setParams(PixelSorterSettings settings);
 
 	void threadedFunction();
 
@@ -45,7 +46,7 @@ private:
 
 	unique_ptr<Comparator> GetTestCondition(bool start, bool swap);
 	unique_ptr<Comparator> GetSortFunction();
-	unique_ptr<Comparator> GetComparitor(COMPARATOR mode, bool swap);
+	unique_ptr<Comparator> GetComparitor(PixelSorterSettings::COMPARATOR mode, bool swap);
 
 	int srt;
 	int end;
@@ -56,20 +57,5 @@ private:
 	bool sorting = false;
 	bool endOfLine = false;
 
-	ORIENTATION_TYPE orientation;
-	DIRECTION_TYPE direction;
-	SORT_DIR sortDir;
-	COMPARATOR sortMode;
-	COMPARATOR startMode;
-	COMPARATOR stopMode;
-
-	bool upSwap;
-	bool downSwap;
-
-	float upThresh;
-	float downThresh;
-
-	int maxSeq;
-	int minSeq;
-
+	PixelSorterSettings settings;
 };

@@ -3,34 +3,9 @@
 //--------------------------------------------------------------
 void PixelSorter::setup(const ofPixels & in)
 {
-	setupParams();
 	setImage(in);
 	_isSetup = true;
 }
-//--------------------------------------------------------------
-void PixelSorter::setupParams() {
-	// Parameters
-	params = ofParameterGroup("Pixel sorting params");
-
-	params.add(orientation.set("Orientation", (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::VERTICAL));
-	params.add(direction.set("Direction", (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE));
-	params.add(sortDir.set("Sort direction", (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE));
-	params.add(sortMode.set("Sort mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE));
-	params.add(startMode.set("Start mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE));
-	params.add(stopMode.set("Stop mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE));
-
-	params.add(upSwap.set("Up swap", true));
-	params.add(downSwap.set("Down swap", false));
-
-	params.add(upThresh.set("Up threshold", 0.5, 0, 1.0));
-	params.add(downThresh.set("Down threshold", 0.5, 0, 1.0));
-
-	params.add(maxSeq.set("Max sequence length", 400, 0, maxLineLength));
-	params.add(minSeq.set("Min sequence length", 0, 0, maxLineLength));
-
-	ofAddListener(params.parameterChangedE(), this, &PixelSorter::parameterChanged);
-}
-
 
 //--------------------------------------------------------------
 void PixelSorter::setImage(const ofPixels & in)
@@ -39,7 +14,6 @@ void PixelSorter::setImage(const ofPixels & in)
 	out.allocate(in.getWidth(), in.getHeight(), in.getImageType());
 
 	setupThreads();
-
 	update();
 }
 
@@ -80,7 +54,7 @@ void PixelSorter::pixelSort()
 	uint64_t srtTime = ofGetSystemTimeMillis();
 
 	for (auto &t : threads) {
-		t->setParams(params);
+		t->setParams(settings);
 		t->startThread();		
 	}
 
