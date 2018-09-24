@@ -30,15 +30,6 @@ namespace PixelComparisons {
 		NONE
 	};
 
-	//template<COMPARATOR C>
-	//class Comparator {
-
-	//};
-
-	//class  Comparator : public Comparator<COMPARATOR::BRIGHTNESS> {
-
-
-	//};
 
 	class Comparator {
 	protected:

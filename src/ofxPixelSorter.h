@@ -35,10 +35,14 @@ public:
 	void setImage(const ofPixels & in);
 	bool isFrameNew() { return frameIsNew; }
 
+	bool isSetup() const {
+		return _isSetup;
+	};
 
 private:
 	ofPixels in;
 	ofPixels out;
+	bool _isSetup = false;
 
 	vector<unique_ptr<PixelSortingThread>> threads;
 
@@ -47,7 +51,6 @@ private:
 	void setupParams();
 	void setupThreads();
 	void pixelSort();
-
 
 	void parameterChanged(ofAbstractParameter & parameter){ 
 		ofLogNotice() << params.toString();

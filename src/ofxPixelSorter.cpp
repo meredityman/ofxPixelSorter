@@ -5,6 +5,7 @@ void PixelSorter::setup(const ofPixels & in)
 {
 	setupParams();
 	setImage(in);
+	_isSetup = true;
 }
 //--------------------------------------------------------------
 void PixelSorter::setupParams() {
@@ -78,14 +79,6 @@ void PixelSorter::pixelSort()
 {
 	uint64_t srtTime = ofGetSystemTimeMillis();
 
-
-	//if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
-	//	in.rotate90To(out, 1);
-	//}
-	//else {
-	//	out = in;
-	//}
-
 	for (auto &t : threads) {
 		t->setParams(params);
 		t->startThread();		
@@ -110,25 +103,12 @@ void PixelSorter::pixelSort()
 
 	uint64_t sortingTime = ofGetSystemTimeMillis();
 
-
-	//if (static_cast<ORIENTATION_TYPE>(orientation.get()) == ORIENTATION_TYPE::VERTICAL) {
-	//	out.rotate90(3);
-	//}
-
 	ofLogNotice() << "GetLines time: " << getLinesTime - srtTime << "ms";
 	ofLogNotice() << "Sorting time: " << sortingTime - getLinesTime << "ms";
 	ofLogNotice() << "Total Execution time: " << ofGetSystemTimeMillis() - srtTime << "ms";
 }
 
-
-//--------------------------------------------------------------
-//
-//--------------------------------------------------------------
 ofPixels& PixelSorter::getPixels() { 
 	frameIsNew = false;
 	return out; 
 }
-//--------------------------------------------------------------
-
-
-

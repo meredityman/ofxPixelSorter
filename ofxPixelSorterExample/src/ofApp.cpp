@@ -15,7 +15,7 @@ void ofApp::setup(){
 		if (file.isFile()) {
 			string ext = file.getExtension();
 
-			if (ext == "jpg" || ext == "png") {
+			if (ext == "jpg" || ext == "JPG" || ext == "png") {
 				useImage = true;
 				img.load(path);
 			}
