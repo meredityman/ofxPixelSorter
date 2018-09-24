@@ -4,27 +4,49 @@
 void PixelSorter::setup(const ofPixels & in)
 {
 	setImage(in);
-	_isSetup = true;
+	bIsSetup = true;
+	bUpdateRequired = true;
 }
 
 //--------------------------------------------------------------
 void PixelSorter::setImage(const ofPixels & in)
 {
 	this->in = in;
-	out.allocate(in.getWidth(), in.getHeight(), in.getImageType());
-
-	setupThreads();
-	update();
+	out = ofPixels(in);
+	bUpdateRequired = true;
 }
 
 //--------------------------------------------------------------
 void PixelSorter::update()
 {
+	if (!bIsSetup) { 
+		ofLogError() << "Pixel sorter not initialised"; 
+		return;
+	}
+	else if (!bUpdateRequired) {
+		return;
+	}
+
+	if (!bThreadsSetup) { setupThreads(); }
+
 	pixelSort();
-	frameIsNew = true;
+	bUpdateRequired = false;
+	bFrameIsNew = true;
+}
+
+//--------------------------------------------------------------
+ofPixels& PixelSorter::getPixels() {
+	if (!bIsSetup) {
+		ofLogError() << "Pixel sorter not initialised";
+	}
+
+	bFrameIsNew = false;
+	return out;
 }
 //--------------------------------------------------------------
 void PixelSorter::setupThreads() {
+
+	threads.clear();
 
 	int nCores = std::thread::hardware_concurrency();
 
@@ -46,6 +68,7 @@ void PixelSorter::setupThreads() {
 		threads.push_back(std::move(newThread));
 		threads.back()->startThread();
 	}
+	bThreadsSetup = true;
 }
 
 //--------------------------------------------------------------
@@ -54,7 +77,7 @@ void PixelSorter::pixelSort()
 	uint64_t srtTime = ofGetSystemTimeMillis();
 
 	for (auto &t : threads) {
-		t->setParams(settings);
+		t->setSettings(settings);
 		t->startThread();		
 	}
 
@@ -65,7 +88,7 @@ void PixelSorter::pixelSort()
 	for (auto &t : threads) {
 		t->waitForThread(false, -1);
 
-		//ofLogNotice() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
+		//ofLogVerbose() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
 
 		for (size_t y = t->srtLine; y < t->endLine; y++) {
 			
@@ -77,12 +100,7 @@ void PixelSorter::pixelSort()
 
 	uint64_t sortingTime = ofGetSystemTimeMillis();
 
-	ofLogNotice() << "GetLines time: " << getLinesTime - srtTime << "ms";
-	ofLogNotice() << "Sorting time: " << sortingTime - getLinesTime << "ms";
-	ofLogNotice() << "Total Execution time: " << ofGetSystemTimeMillis() - srtTime << "ms";
-}
-
-ofPixels& PixelSorter::getPixels() { 
-	frameIsNew = false;
-	return out; 
+	ofLogVerbose() << "GetLines time: " << getLinesTime - srtTime << "ms";
+	ofLogVerbose() << "Sorting time: " << sortingTime - getLinesTime << "ms";
+	ofLogVerbose() << "Total Execution time: " << ofGetSystemTimeMillis() - srtTime << "ms";
 }

@@ -16,7 +16,7 @@ void PixelSortingThread::setLines(int _srtLine, int _endLine, const ofPixels & o
 	}
 }
 
-void PixelSortingThread::setParams(PixelSorterSettings settings) {
+void PixelSortingThread::setSettings(PixelSorterSettings settings) {
 	this->settings = settings;
 
 	if (settings.direction == PixelSorterSettings::DIRECTION_TYPE::POSITIVE) {

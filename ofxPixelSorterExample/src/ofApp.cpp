@@ -40,6 +40,7 @@ void ofApp::setup(){
 	}
 
 	pixelSorter.setup(img);
+	out = ofImage(img);
 
 	gui.setup();
 
@@ -47,6 +48,9 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	pixelSorter.update();
+
+
 	if (!useImage) {
 		vid.update();
 		if (vid.isFrameNew()) {

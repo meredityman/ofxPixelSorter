@@ -10,12 +10,16 @@ class PixelSortingThread : public ofThread
 public:
 
 	void setLines(int _srtLine, int _endLine, const ofPixels & out);
-	void setParams(PixelSorterSettings settings);
+	void setSettings(PixelSorterSettings settings);
 
 	void threadedFunction();
 
 	ofColor getColor(int x, int y) const {
 		return out_lines[y - srtLine][x];
+	}
+
+	float timePerLines() {
+		return 1.0 * std::accumulate(lineTimes.begin(), lineTimes.end(), 0LL) / lineTimes.size();
 	}
 
 	int srtLine;
@@ -24,10 +28,6 @@ public:
 	uint64_t executionTime;
 
 	vector<uint64_t> lineTimes;
-
-	float timePerLines() {
-		return 1.0 * std::accumulate(lineTimes.begin(), lineTimes.end(), 0LL) / lineTimes.size();
-	}
 
 private:
 	vector<vector<ofColor>> orig_lines;
@@ -48,11 +48,11 @@ private:
 	unique_ptr<Comparator> GetSortFunction();
 	unique_ptr<Comparator> GetComparitor(PixelSorterSettings::COMPARATOR mode, bool swap);
 
-	int srt;
-	int end;
-	int inc;
-	int stp;
-	int lineLength;
+	unsigned int srt;
+	unsigned int end;
+	unsigned int inc;
+	unsigned int stp;
+	unsigned int lineLength;
 
 	bool sorting = false;
 	bool endOfLine = false;
