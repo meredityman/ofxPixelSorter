@@ -49,7 +49,7 @@ struct PixelSorterSettings {
 	PixelSorterSettings() {
 
 		// Set defaults
-		orientation = ORIENTATION_TYPE::HORIZONTAL;
+		orientation = ORIENTATION_TYPE::VERTICAL;
 		direction   = DIRECTION_TYPE::POSITIVE;
 		sortDir     = SORT_DIR::POSITIVE;
 		sortMode    = COMPARATOR::BRIGHTNESS;

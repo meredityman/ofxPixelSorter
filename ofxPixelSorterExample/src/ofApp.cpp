@@ -6,6 +6,7 @@ using namespace PixelComparisons;
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofLogToConsole();
+	ofSetLogLevel(OF_LOG_VERBOSE);
 
 	ofFileDialogResult result = ofSystemLoadDialog("Select image/video", false, ofFilePath::getAbsolutePath(ofToDataPath("")));
 	if (result.bSuccess) {
@@ -49,7 +50,6 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	pixelSorter.update();
-
 
 	if (!useImage) {
 		vid.update();

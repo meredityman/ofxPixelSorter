@@ -2,16 +2,16 @@
 #include "ofMain.h"
 #include "Comparisons.h"
 #include "PixelSorterSettings.h"
+#include "LineFinder.h"
 
 using namespace PixelComparisons;
 
 class PixelSortingThread : public ofThread
 {
 public:
-
-	void setLines(int _srtLine, int _endLine, const ofPixels & out);
 	void setSettings(PixelSorterSettings settings);
-
+	void setLines(const ofPixels & in, int threadNum);
+	void readOutPixels(ofPixels & out);
 	void threadedFunction();
 
 	ofColor getColor(int x, int y) const {
@@ -19,17 +19,17 @@ public:
 	}
 
 	float timePerLines() {
-		return 1.0 * std::accumulate(lineTimes.begin(), lineTimes.end(), 0LL) / lineTimes.size();
+		return 1.0 * std::accumulate(lineExecutionTimes.begin(), lineExecutionTimes.end(), 0LL) / lineExecutionTimes.size();
 	}
 
-	int srtLine;
-	int endLine;
+	unsigned int srtLine;
+	unsigned int endLine;
 
 	uint64_t executionTime;
-
-	vector<uint64_t> lineTimes;
+	vector<uint64_t> lineExecutionTimes;
 
 private:
+	vector<vector<tuple<unsigned int, unsigned int>>> orig_coords;
 	vector<vector<ofColor>> orig_lines;
 	vector<vector<ofColor>> out_lines;
 
@@ -44,15 +44,14 @@ private:
 	};
 	SortFunctions sortFunctions;
 
+	unique_ptr<LineFinder> lineFinder;
+
 	unique_ptr<Comparator> GetTestCondition(bool start, bool swap);
 	unique_ptr<Comparator> GetSortFunction();
 	unique_ptr<Comparator> GetComparitor(PixelSorterSettings::COMPARATOR mode, bool swap);
 
-	unsigned int srt;
-	unsigned int end;
-	unsigned int inc;
-	unsigned int stp;
-	unsigned int lineLength;
+	unique_ptr<LineFinder> GetLineFinder(PixelSorterSettings::ORIENTATION_TYPE mode);
+
 
 	bool sorting = false;
 	bool endOfLine = false;

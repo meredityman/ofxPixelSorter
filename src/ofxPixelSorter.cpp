@@ -29,6 +29,7 @@ void PixelSorter::update()
 
 	if (!bThreadsSetup) { setupThreads(); }
 
+
 	pixelSort();
 	bUpdateRequired = false;
 	bFrameIsNew = true;
@@ -50,23 +51,11 @@ void PixelSorter::setupThreads() {
 
 	int nCores = std::thread::hardware_concurrency();
 
-	int nLines = std::floor(in.getHeight() / nCores);
-	int remLines = in.getHeight() % nCores;
-
 	for (int i = 0; i < nCores; i++) {
 
-		int srtLine = i * nLines;
-		int endLine = srtLine + nLines;
-
-		if (i == nCores - 1) {
-			endLine += remLines;
-		}
-
 		unique_ptr<PixelSortingThread> newThread = make_unique<PixelSortingThread>();
-		newThread->setLines(srtLine, endLine, in);
-
+		newThread->setLines(in, i);
 		threads.push_back(std::move(newThread));
-		threads.back()->startThread();
 	}
 	bThreadsSetup = true;
 }
@@ -74,6 +63,7 @@ void PixelSorter::setupThreads() {
 //--------------------------------------------------------------
 void PixelSorter::pixelSort()
 {
+
 	uint64_t srtTime = ofGetSystemTimeMillis();
 
 	for (auto &t : threads) {
@@ -84,18 +74,11 @@ void PixelSorter::pixelSort()
 	uint64_t getLinesTime = ofGetSystemTimeMillis(); 
 
 	// Wait for threads to finish
-
 	for (auto &t : threads) {
 		t->waitForThread(false, -1);
 
 		//ofLogVerbose() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
-
-		for (size_t y = t->srtLine; y < t->endLine; y++) {
-			
-			for (size_t x = 0; x < out.getWidth(); x++) {
-				out.setColor(x, y, t->getColor(x, y));
-			}
-		}
+		t->readOutPixels(out);
 	}
 
 	uint64_t sortingTime = ofGetSystemTimeMillis();

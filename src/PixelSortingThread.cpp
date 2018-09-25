@@ -1,23 +1,81 @@
 #include "PixelSortingThread.h"
 
 
-void PixelSortingThread::setLines(int _srtLine, int _endLine, const ofPixels & out) {
-	lineLength = out.getWidth();
-
-	srtLine = _srtLine;
-	endLine = _endLine;
-
-	for (int y = srtLine; y < endLine; y++) {
-		vector<ofColor> line;
-		for (size_t x = 0; x < out.getWidth(); x++) {
-			line.push_back(out.getColor(x, y));
-		}
-		orig_lines.push_back(line);
-	}
-}
-
+//--------------------------------------------------------------
 void PixelSortingThread::setSettings(PixelSorterSettings settings) {
 	this->settings = settings;
+
+	sortFunctions.sortFunction   = GetSortFunction();
+	sortFunctions.startCondition = GetTestCondition(true, settings.upSwap);
+	sortFunctions.stopCondition  = GetTestCondition(false, settings.downSwap);
+	lineFinder = GetLineFinder(settings.orientation);
+
+}
+//--------------------------------------------------------------
+void PixelSortingThread::setLines(const ofPixels & in, int threadNum) {
+	if(lineFinder == nullptr) lineFinder = GetLineFinder(settings.orientation);
+	lineFinder->findLines(in, threadNum);
+}
+//--------------------------------------------------------------
+void PixelSortingThread::readOutPixels(ofPixels & out) {
+
+	for (int i = 0; i < orig_coords.size(); i++) {
+		for (int j = 0; j < orig_coords[i].size(); j++) {
+
+			out.setColor(	std::get<0>(orig_coords[i][j]),
+							std::get<1>(orig_coords[i][j]), 
+							out_lines[i][j]);
+		}
+	}
+}
+//--------------------------------------------------------------
+unique_ptr<LineFinder> PixelSortingThread::GetLineFinder(PixelSorterSettings::ORIENTATION_TYPE mode) {
+
+	switch(mode) {
+	case PixelSorterSettings::ORIENTATION_TYPE::HORIZONTAL:
+		return make_unique<LineFinderHorizontal>(LineFinderHorizontal(orig_coords, orig_lines));
+		break;
+	case PixelSorterSettings::ORIENTATION_TYPE::VERTICAL:
+		return make_unique<LineFinderVertical>(LineFinderVertical(orig_coords, orig_lines));
+	default:
+		return make_unique<LineFinderHorizontal>(LineFinderHorizontal(orig_coords, orig_lines));
+	};
+	
+
+}
+//--------------------------------------------------------------
+void PixelSortingThread::threadedFunction()
+{
+	out_lines = vector<vector<ofColor>>(orig_lines);
+	sortLines();
+}
+
+//--------------------------------------------------------------
+void PixelSortingThread::sortLines() {
+	uint64_t srtTime = ofGetSystemTimeMicros();
+
+	for (auto & line : out_lines) {
+		uint64_t lineTime = ofGetSystemTimeMicros();
+		sortLine(line);
+
+		lineExecutionTimes.push_back(ofGetSystemTimeMicros() - lineTime);
+	}
+
+	executionTime = ofGetSystemTimeMicros() - srtTime;
+}
+//--------------------------------------------------------------
+void PixelSortingThread::sortLine(vector<ofColor> & line) {
+
+	sorting = false;
+	endOfLine = false;
+
+	vector<ofColor> subLine;
+
+	unsigned int srt;
+	unsigned int end;
+	unsigned int inc;
+	unsigned int stp;
+	unsigned int lineLength = line.size();;
 
 	if (settings.direction == PixelSorterSettings::DIRECTION_TYPE::POSITIVE) {
 		srt = 0;
@@ -32,39 +90,7 @@ void PixelSortingThread::setSettings(PixelSorterSettings settings) {
 		inc = -1;
 	}
 
-	sortFunctions.sortFunction   = GetSortFunction();
-	sortFunctions.startCondition = GetTestCondition(true, settings.upSwap);
-	sortFunctions.stopCondition  = GetTestCondition(false, settings.downSwap);
 
-}
-
-void PixelSortingThread::threadedFunction()
-{
-	out_lines = vector<vector<ofColor>>(orig_lines);
-	sortLines();
-}
-
-//--------------------------------------------------------------
-void PixelSortingThread::sortLines() {
-	uint64_t srtTime = ofGetSystemTimeMicros();
-
-	for (auto & line : out_lines) {
-		uint64_t lineTime = ofGetSystemTimeMicros();
-
-		sortLine(line);
-
-		lineTimes.push_back(ofGetSystemTimeMicros() - lineTime);
-	}
-
-	executionTime = ofGetSystemTimeMicros() - srtTime;
-}
-//--------------------------------------------------------------
-void PixelSortingThread::sortLine(vector<ofColor> & line) {
-
-	sorting = false;
-	endOfLine = false;
-
-	vector<ofColor> subLine;
 	for (int i = srt; i != end; i += inc) {
 		endOfLine |= (i == stp);
 
