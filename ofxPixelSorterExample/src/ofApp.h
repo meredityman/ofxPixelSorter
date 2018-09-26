@@ -31,5 +31,5 @@ class ofApp : public ofBaseApp{
 
 		PixelSorter pixelSorter;
 
-		bool useImage = true;
+		ofParameter<bool> autoUpdate;
 };

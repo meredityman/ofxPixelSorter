@@ -17,17 +17,7 @@ void ofApp::setup(){
 			string ext = file.getExtension();
 
 			if (ext == "jpg" || ext == "JPG" || ext == "png") {
-				useImage = true;
 				img.load(path);
-			}
-			else if (ext == "mp4" || ext == "mv4") {
-				useImage = false;
-
-				vid.load(path);
-				vid.setLoopState(ofLoopType::OF_LOOP_NORMAL);
-				vid.play();
-
-				img = ofImage(vid.getPixels());
 			}
 			else {
 				ofLogError();
@@ -45,21 +35,15 @@ void ofApp::setup(){
 
 	gui.setup();
 	pixelSorter.settings.AddParamsToPanel(gui);
+	gui.add(autoUpdate.set("Auto update", false));
 
 
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	pixelSorter.update();
-
-	if (!useImage) {
-		vid.update();
-		if (vid.isFrameNew()) {
-			img.setFromPixels(vid.getPixels());
-			pixelSorter.setImage(img);
-			pixelSorter.update();
-		}
+	if (autoUpdate) {
+		pixelSorter.update();
 	}
 
 	if (pixelSorter.isFrameNew()) {
@@ -79,6 +63,11 @@ void ofApp::draw(){
 	out.draw(w, 0, w, h);
 
 	gui.draw();
+
+	ofDrawBitmapStringHighlight(pixelSorter.settings.toString(),
+		ofVec2f(0, 0),
+		ofColor::black,
+		ofColor::white);
 }
 
 //--------------------------------------------------------------
@@ -88,6 +77,8 @@ void ofApp::keyPressed(int key){
 
 
 	switch (key) {
+	case OF_KEY_RETURN:
+		if(!autoUpdate) pixelSorter.update();
 	case OF_KEY_UP:
 		pixelSorter.settings.setOrientation(ORIENTATION_TYPE::VERTICAL);
 		pixelSorter.settings.setDirection(DIRECTION_TYPE::NEGATIVE);

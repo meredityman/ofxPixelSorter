@@ -61,13 +61,13 @@ struct PixelSorterSettings {
 		upSwap.set("Up Swap", false);
 		downSwap.set("Down Swap", false);
 
-		upThresh.set("Up Thresh", false);
-		downThresh.set("Down Thesh", false);
+		upThresh.set("Up Thresh", 0.5, 0.0, 1.0);
+		downThresh.set("Down Thesh", 0.5, 0.0, 1.0);
 
 		maxSeq.set("Max Length", 5120, 0, 5120);
 		minSeq.set("Min Length", 0, 0, 5120);
 
-		orientation.addListener(this, &PixelSorterSettings::updateOrientationName);
+		//orientation.addListener(this, &PixelSorterSettings::updateOrientationName);
 
 
 	}
@@ -94,29 +94,29 @@ struct PixelSorterSettings {
 	string toString() {
 		ostringstream stream;
 
-		stream << "Orientation: "    << orientationNames[(int)orientation];
-		stream << "Direction: "      << directionNames[(int)direction];
-		stream << "Sort Direction: " << sortDirNames[(int)sortDir];
-		stream << "Sort Modes: "     << comparitorNames[(int)sortMode];
-		stream << "Start Mode: "     << comparitorNames[(int)startMode];
-		stream << "Stop Modes: "     << comparitorNames[(int)stopMode];
+		stream << "Orientation: "    << orientationNames[(int)orientation] << "\n";
+		stream << "Direction: "      << directionNames[(int)direction] << "\n";
+		stream << "Sort Direction: " << sortDirNames[(int)sortDir] << "\n";
+		stream << "Sort Modes: "     << comparitorNames[(int)sortMode] << "\n";
+		stream << "Start Mode: "     << comparitorNames[(int)startMode] << "\n";
+		stream << "Stop Modes: "     << comparitorNames[(int)stopMode] << "\n";
 
-		stream << "Up Swap: "   << ofToString(upSwap);
-		stream << "Down Swap: " << ofToString(downSwap);
+		stream << "Up Swap: "   << ofToString(upSwap) << "\n";
+		stream << "Down Swap: " << ofToString(downSwap) << "\n";
 
-		stream << "Up thresh: " << ofToString(upThresh);
-		stream << "Down Thresh: " << ofToString(downThresh);
+		stream << "Up thresh: " << ofToString(upThresh) << "\n";
+		stream << "Down Thresh: " << ofToString(downThresh) << "\n";
 
-		stream << "Max Length: " << ofToString(maxSeq);
-		stream << "Min Length: " << ofToString(minSeq);
+		stream << "Max Length: " << ofToString(maxSeq) << "\n";
+		stream << "Min Length: " << ofToString(minSeq) << "\n";
 
 		return stream.str();
 	}
 
-	void updateOrientationName(const void * sender, int &value) {
-		((ofParameter<int>*)sender)->setName("");
+	//void updateOrientationName(const void * sender, int &value) {
+	//	((ofParameter<int>*)sender)->setName("");
 
-	}
+	//}
 
 	ORIENTATION_TYPE getOrientation() {
 		return (ORIENTATION_TYPE)orientation.get();
