@@ -44,6 +44,8 @@ void ofApp::setup(){
 	out = ofImage(img);
 
 	gui.setup();
+	pixelSorter.settings.AddParamsToPanel(gui);
+
 
 }
 
@@ -81,23 +83,27 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	//switch (key) {
-	//case OF_KEY_UP:
-	//	pixelSorter.orientation = (int)ORIENTATION_TYPE::VERTICAL;
-	//	pixelSorter.direction = (int)DIRECTION_TYPE::NEGATIVE;
-	//	break;
-	//case OF_KEY_DOWN:
-	//	pixelSorter.orientation = (int)ORIENTATION_TYPE::VERTICAL;
-	//	pixelSorter.direction = (int)DIRECTION_TYPE::POSITIVE;
-	//	break;
-	//case OF_KEY_LEFT:
-	//	pixelSorter.orientation = (int)ORIENTATION_TYPE::HORIZONTAL;
-	//	pixelSorter.direction = (int)DIRECTION_TYPE::NEGATIVE;
-	//	break;
-	//case OF_KEY_RIGHT:
-	//	pixelSorter.orientation = (int)ORIENTATION_TYPE::HORIZONTAL;
-	//	pixelSorter.direction = (int)DIRECTION_TYPE::POSITIVE;
-	//	break;
+
+	ofLogNotice() << pixelSorter.settings.toString();
+
+
+	switch (key) {
+	case OF_KEY_UP:
+		pixelSorter.settings.setOrientation(ORIENTATION_TYPE::VERTICAL);
+		pixelSorter.settings.setDirection(DIRECTION_TYPE::NEGATIVE);
+		break;
+	case OF_KEY_DOWN:
+		pixelSorter.settings.setOrientation(ORIENTATION_TYPE::VERTICAL);
+		pixelSorter.settings.setDirection(DIRECTION_TYPE::POSITIVE);
+		break;
+	case OF_KEY_LEFT:
+		pixelSorter.settings.setOrientation(ORIENTATION_TYPE::HORIZONTAL);
+		pixelSorter.settings.setDirection(DIRECTION_TYPE::NEGATIVE);
+		break;
+	case OF_KEY_RIGHT:
+		pixelSorter.settings.setOrientation(ORIENTATION_TYPE::HORIZONTAL);
+		pixelSorter.settings.setDirection(DIRECTION_TYPE::POSITIVE);
+		break;
 	//case 'q':
 	//	pixelSorter.sortDir = (int)SORT_DIR::POSITIVE;
 	//	break;
@@ -212,7 +218,7 @@ void ofApp::keyPressed(int key){
 	//case 'S':
 	//	pixelSorter.downSwap = false;
 	//	break;
-	//}
+	}
 }
 
 //--------------------------------------------------------------

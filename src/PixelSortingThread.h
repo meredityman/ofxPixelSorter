@@ -1,8 +1,8 @@
 #pragma once
 #include "ofMain.h"
 #include "Comparisons.h"
-#include "PixelSorterSettings.h"
 #include "LineFinder.h"
+#include "PixelSorterSettings.h"
 
 using namespace PixelComparisons;
 
@@ -48,9 +48,9 @@ private:
 
 	unique_ptr<Comparator> GetTestCondition(bool start, bool swap);
 	unique_ptr<Comparator> GetSortFunction();
-	unique_ptr<Comparator> GetComparitor(PixelSorterSettings::COMPARATOR mode, bool swap);
+	unique_ptr<Comparator> GetComparitor(COMPARATOR mode, bool swap);
 
-	unique_ptr<LineFinder> GetLineFinder(PixelSorterSettings::ORIENTATION_TYPE mode);
+	unique_ptr<LineFinder> GetLineFinder(ORIENTATION_TYPE mode);
 
 
 	bool sorting = false;

@@ -8,12 +8,12 @@ void PixelSortingThread::setSettings(PixelSorterSettings settings) {
 	sortFunctions.sortFunction   = GetSortFunction();
 	sortFunctions.startCondition = GetTestCondition(true, settings.upSwap);
 	sortFunctions.stopCondition  = GetTestCondition(false, settings.downSwap);
-	lineFinder = GetLineFinder(settings.orientation);
+	lineFinder = GetLineFinder(settings.getOrientation());
 
 }
 //--------------------------------------------------------------
 void PixelSortingThread::setLines(const ofPixels & in, int threadNum) {
-	if(lineFinder == nullptr) lineFinder = GetLineFinder(settings.orientation);
+	lineFinder = GetLineFinder(settings.getOrientation());
 	lineFinder->findLines(in, threadNum);
 }
 //--------------------------------------------------------------
@@ -29,13 +29,13 @@ void PixelSortingThread::readOutPixels(ofPixels & out) {
 	}
 }
 //--------------------------------------------------------------
-unique_ptr<LineFinder> PixelSortingThread::GetLineFinder(PixelSorterSettings::ORIENTATION_TYPE mode) {
+unique_ptr<LineFinder> PixelSortingThread::GetLineFinder(ORIENTATION_TYPE mode) {
 
 	switch(mode) {
-	case PixelSorterSettings::ORIENTATION_TYPE::HORIZONTAL:
+	case ORIENTATION_TYPE::HORIZONTAL:
 		return make_unique<LineFinderHorizontal>(LineFinderHorizontal(orig_coords, orig_lines));
 		break;
-	case PixelSorterSettings::ORIENTATION_TYPE::VERTICAL:
+	case ORIENTATION_TYPE::VERTICAL:
 		return make_unique<LineFinderVertical>(LineFinderVertical(orig_coords, orig_lines));
 	default:
 		return make_unique<LineFinderHorizontal>(LineFinderHorizontal(orig_coords, orig_lines));
@@ -77,7 +77,7 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 	unsigned int stp;
 	unsigned int lineLength = line.size();;
 
-	if (settings.direction == PixelSorterSettings::DIRECTION_TYPE::POSITIVE) {
+	if (settings.getDirection() == DIRECTION_TYPE::POSITIVE) {
 		srt = 0;
 		end = lineLength;
 		stp = end - 1;
@@ -135,7 +135,7 @@ void PixelSortingThread::sortSubLine(vector<ofColor> & subLine, vector<ofColor> 
 	std::sort(subLine.begin(), subLine.end(), std::ref(*sortFunctions.sortFunction));
 
 
-	if (settings.direction == PixelSorterSettings::DIRECTION_TYPE::POSITIVE) {
+	if (settings.getDirection() == DIRECTION_TYPE::POSITIVE) {
 		std::copy(subLine.begin(), subLine.end(), line.begin() + i - subLine.size());
 	}
 	else {
@@ -151,42 +151,42 @@ void PixelSortingThread::sortSubLine(vector<ofColor> & subLine, vector<ofColor> 
 //--------------------------------------------------------------
 
 unique_ptr<Comparator> PixelSortingThread::GetSortFunction() {
-	bool swap = settings.sortDir == PixelSorterSettings::SORT_DIR::POSITIVE;
-	return GetComparitor(settings.sortMode, swap);
+	bool swap = settings.getSortDir() == SORT_DIR::POSITIVE;
+	return GetComparitor(settings.getSortMode(), swap);
 }
 
 unique_ptr<Comparator> PixelSortingThread::GetTestCondition(bool start, bool swap) {
 
-	PixelSorterSettings::COMPARATOR mode;
+	COMPARATOR mode;
 	if (start) {
-		mode = static_cast<PixelSorterSettings::COMPARATOR>(settings.startMode);
+		mode = static_cast<COMPARATOR>(settings.getStartMode());
 	}
 	else {
-		mode = static_cast<PixelSorterSettings::COMPARATOR>(settings.stopMode);
+		mode = static_cast<COMPARATOR>(settings.getStopMode());
 	}
 
 	return GetComparitor(mode, swap);
 }
 
-unique_ptr<Comparator> PixelSortingThread::GetComparitor(PixelSorterSettings::COMPARATOR mode, bool swap) {
+unique_ptr<Comparator> PixelSortingThread::GetComparitor(COMPARATOR mode, bool swap) {
 	switch (mode) {
-	case PixelSorterSettings::COMPARATOR::BRIGHTNESS:
+	case COMPARATOR::BRIGHTNESS:
 		return make_unique<CompareBrightness>(CompareBrightness(swap));
-	case PixelSorterSettings::COMPARATOR::LIGHTNESS:
+	case COMPARATOR::LIGHTNESS:
 		return  make_unique<CompareLightness>(CompareLightness(swap));
-	case PixelSorterSettings::COMPARATOR::SATURATION:
+	case COMPARATOR::SATURATION:
 		return  make_unique<CompareSaturation>(CompareSaturation(swap));
-	case PixelSorterSettings::COMPARATOR::HUE:
+	case COMPARATOR::HUE:
 		return  make_unique<CompareHue>(CompareHue(swap));
-	case PixelSorterSettings::COMPARATOR::REDNESS:
+	case COMPARATOR::REDNESS:
 		return  make_unique<CompareRedness>(CompareRedness(swap));
-	case PixelSorterSettings::COMPARATOR::BLUENESS:
+	case COMPARATOR::BLUENESS:
 		return  make_unique<CompareBlueness>(CompareBlueness(swap));
-	case PixelSorterSettings::COMPARATOR::GREENESS:
+	case COMPARATOR::GREENESS:
 		return  make_unique<CompareGreeness>(CompareGreeness(swap));
-	case PixelSorterSettings::COMPARATOR::RANDOM:
+	case COMPARATOR::RANDOM:
 		return  make_unique<CompareRandom>(CompareRandom(swap));
-	case PixelSorterSettings::COMPARATOR::NONE:
+	case COMPARATOR::NONE:
 	default:
 		return make_unique<CompareNone>(CompareNone(swap));
 	}

@@ -6,6 +6,24 @@ void PixelSorter::setup(const ofPixels & in)
 	setImage(in);
 	bIsSetup = true;
 	bUpdateRequired = true;
+
+	onUpdateRequired.push(settings.orientation.newListener([&](int&) {this->updateRequired(); }));
+	onThreadSetupRequired = settings.orientation.newListener([&](int&) {this->threadSetupRequired(); });
+
+	onUpdateRequired.push(settings.direction.newListener([&](int&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.sortDir.newListener([&](int&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.sortMode.newListener([&](int&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.startMode.newListener([&](int&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.stopMode.newListener([&](int&) {this->updateRequired(); }));
+
+	onUpdateRequired.push(settings.upSwap.newListener([&](bool&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.downSwap.newListener([&](bool&) {this->updateRequired(); }));
+
+	onUpdateRequired.push(settings.upThresh.newListener([&](float&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.downThresh.newListener([&](float&) {this->updateRequired(); }));
+
+	onUpdateRequired.push(settings.maxSeq.newListener([&](unsigned int&) {this->updateRequired(); }));
+	onUpdateRequired.push(settings.minSeq.newListener([&](unsigned int&) {this->updateRequired(); }));
 }
 
 //--------------------------------------------------------------
@@ -54,6 +72,7 @@ void PixelSorter::setupThreads() {
 	for (int i = 0; i < nCores; i++) {
 
 		unique_ptr<PixelSortingThread> newThread = make_unique<PixelSortingThread>();
+		newThread->setSettings(settings);
 		newThread->setLines(in, i);
 		threads.push_back(std::move(newThread));
 	}
