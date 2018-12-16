@@ -52,21 +52,21 @@ struct PixelSorterSettings {
 
 		ofLogNotice() << "Here";
 
-		orientation.set("Orientation", (int)ORIENTATION_TYPE::DIAGONAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::ANTIDIAGONAL);
-		direction.set("Direction",     (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE);
-		sortDir.set("Sort Direction",  (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE);
-		sortMode.set("Sort Modes",  (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE);
-		startMode.set("Start Mode", (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE);
-		stopMode.set("Stop Mode",   (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE);
+		orientation.set( "Orientation",    (int)ORIENTATION_TYPE::DIAGONAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::ANTIDIAGONAL);
+		direction.set  ( "Direction",      (int)DIRECTION_TYPE::POSITIVE,   (int)DIRECTION_TYPE::POSITIVE,     (int)DIRECTION_TYPE::NEGATIVE);
+		sortDir.set    ( "Sort Direction", (int)SORT_DIR::POSITIVE,         (int)SORT_DIR::POSITIVE,           (int)SORT_DIR::NEGATIVE);
+		sortMode.set   ( "Sort Modes",     (int)COMPARATOR::BRIGHTNESS,     (int)COMPARATOR::BRIGHTNESS,       (int)COMPARATOR::NONE);
+		startMode.set  ( "Start Mode",     (int)COMPARATOR::BRIGHTNESS,     (int)COMPARATOR::BRIGHTNESS,       (int)COMPARATOR::NONE);
+		stopMode.set   ( "Stop Mode",      (int)COMPARATOR::BRIGHTNESS,     (int)COMPARATOR::BRIGHTNESS,       (int)COMPARATOR::NONE);
 
-		upSwap.set("Up Swap", false);
+		upSwap.set(   "Up Swap" , false);
 		downSwap.set("Down Swap", false);
 
-		upThresh.set("Up Thresh", 0.5, 0.0, 1.0);
+		upThresh.set(  "Up Thresh" , 0.5, 0.0, 1.0);
 		downThresh.set("Down Thesh", 0.5, 0.0, 1.0);
 
-		maxSeq.set("Max Length", 5120, 0, 5120);
-		minSeq.set("Min Length", 0, 0, 5120);
+		maxSeq.set("Max Length", 1.0, 0.0, 1.0);
+		minSeq.set("Min Length", 0.0, 0.0, 1.0);
 
 		AddUpdateListeners();
 		AddThreadSetupListeners();
@@ -119,10 +119,10 @@ struct PixelSorterSettings {
 		return (COMPARATOR)stopMode.get();
 	}
 
-	unsigned int getMaxSeq() const {
+	float getMaxSeq() const {
 		return maxSeq;
 	}
-	unsigned int getMinSeq()  const {
+	float getMinSeq()  const {
 		return minSeq;
 	}
 
@@ -138,7 +138,7 @@ struct PixelSorterSettings {
 		return upThresh;
 	}
 
-	bool getDownThresh()  const {
+	float getDownThresh()  const {
 		return downThresh;
 	}
 
@@ -182,10 +182,10 @@ struct PixelSorterSettings {
 	};
 
 
-	void setMaxSeq(const unsigned int maxSeq) {
+	void setMaxSeq(const float maxSeq) {
 		setIfChanged(this->maxSeq,  maxSeq);
 	};
-	void setMinSeq(const unsigned int minSeq) {
+	void setMinSeq(const float minSeq) {
 		setIfChanged(this->minSeq, minSeq);	
 	};
 
@@ -221,8 +221,8 @@ struct PixelSorterSettings {
 	ofParameter<float> upThresh;
 	ofParameter<float> downThresh;
 
-	ofParameter<int> maxSeq;
-	ofParameter<int> minSeq;
+	ofParameter<float> maxSeq;
+	ofParameter<float> minSeq;
 
 private:
 
@@ -242,22 +242,22 @@ private:
 
 
 	void AddUpdateListeners() {
-		_onUpdateRequired.push(orientation.newListener([&](int&) { updateRequired(); }));
-
-		_onUpdateRequired.push(direction.newListener([&](int&) {updateRequired(); }));
-		_onUpdateRequired.push(sortDir.newListener([&](int&) {updateRequired(); }));
-		_onUpdateRequired.push(sortMode.newListener([&](int&) {updateRequired(); }));
-		_onUpdateRequired.push(startMode.newListener([&](int&) {updateRequired(); }));
-		_onUpdateRequired.push(stopMode.newListener([&](int&) {updateRequired(); }));
-
-		_onUpdateRequired.push(upSwap.newListener([&](bool&) {updateRequired(); }));
-		_onUpdateRequired.push(downSwap.newListener([&](bool&) {updateRequired(); }));
-
-		_onUpdateRequired.push(upThresh.newListener([&](float&) {updateRequired(); }));
-		_onUpdateRequired.push(downThresh.newListener([&](float&) {updateRequired(); }));
-
-		_onUpdateRequired.push(maxSeq.newListener([&](int&) {updateRequired(); }));
-		_onUpdateRequired.push(minSeq.newListener([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push( orientation.newListener([&](int&) { updateRequired(); }));
+							    
+		_onUpdateRequired.push( direction.newListener  ([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push( sortDir.newListener    ([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push( sortMode.newListener   ([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push( startMode.newListener  ([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push( stopMode.newListener   ([&](int&) {updateRequired(); }));
+								 					  
+		_onUpdateRequired.push( upSwap.newListener     ([&](bool&) {updateRequired(); }));
+		_onUpdateRequired.push( downSwap.newListener   ([&](bool&) {updateRequired(); }));
+								 					  
+		_onUpdateRequired.push( upThresh.newListener   ([&](float&) {updateRequired(); }));
+		_onUpdateRequired.push( downThresh.newListener ([&](float&) {updateRequired(); }));
+							    
+		_onUpdateRequired.push( maxSeq.newListener     ([&](float&) {updateRequired(); }));
+		_onUpdateRequired.push( minSeq.newListener     ([&](float&) {updateRequired(); }));
 	}
 
 	void AddThreadSetupListeners() {

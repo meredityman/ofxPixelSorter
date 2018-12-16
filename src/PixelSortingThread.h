@@ -22,20 +22,21 @@ public:
 		return 1.0 * std::accumulate(lineExecutionTimes.begin(), lineExecutionTimes.end(), 0LL) / lineExecutionTimes.size();
 	}
 
-	unsigned int srtLine;
-	unsigned int endLine;
+	size_t srtLine;
+	size_t endLine;
 
 	uint64_t executionTime;
 	vector<uint64_t> lineExecutionTimes;
 
 private:
-	vector<vector<tuple<unsigned int, unsigned int>>> orig_coords;
+	vector<vector<tuple<size_t, size_t>>> orig_coords;
 	vector<vector<ofColor>> orig_lines;
 	vector<vector<ofColor>> out_lines;
 
 	void sortLines();
 	void sortLine(vector<ofColor> & line);
 	void sortSubLine(vector<ofColor> & subLine, vector<ofColor> & line, int & i);
+
 
 	struct SortFunctions {
 		unique_ptr<Comparator> sortFunction;
@@ -55,8 +56,11 @@ private:
 	DIRECTION_TYPE direction;
 	ORIENTATION_TYPE orientation;
 
-	unsigned int maxSeq;
-	unsigned int minSeq;
+	float maxSeq;
+	float minSeq;
+
+	size_t maxLength;
+	size_t minLength;
 
 	float upThresh;
 	float downThresh;

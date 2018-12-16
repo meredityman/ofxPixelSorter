@@ -3,12 +3,15 @@
 
 class LineFinder {
 protected:
-	vector<vector<tuple<unsigned int, unsigned int>>> * orig_coords;
+	vector<vector<tuple<size_t, size_t>>> * orig_coords;
 	vector<vector<ofColor>> * orig_lines;
 
-public:
+	size_t maxLength = 0;
 
-	LineFinder(	vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+public:
+	virtual size_t getSeqLength(float seq);
+
+	LineFinder(	vector<vector<tuple<size_t, size_t>>> & orig_coords,
 				vector<vector<ofColor>> &orig_lines ) {
 
 		this->orig_coords = &orig_coords;
@@ -20,13 +23,17 @@ public:
 
 };
 
+
+
 class LineFinderHorizontal : public LineFinder {
 public:
-	LineFinderHorizontal(vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+	LineFinderHorizontal(vector<vector<tuple<size_t, size_t>>> & orig_coords,
 		vector<vector<ofColor>> &orig_lines) : LineFinder(orig_coords, orig_lines) { }
 
 
 	void findLines(const ofPixels & in, int threadNum) override {
+		maxLength = in.getWidth();
+
 		int nCores = std::thread::hardware_concurrency();
 
 		int nLines = std::floor(in.getHeight() / nCores);
@@ -41,10 +48,10 @@ public:
 
 		int lineLength = in.getWidth();
 
-		for (unsigned int y = srtLine; y < endLine; y++) {
+		for (size_t y = srtLine; y < endLine; y++) {
 			vector<ofColor> line;
-			vector<tuple<unsigned int, unsigned int>> orig_coord;
-			for (unsigned int x = 0; x < in.getWidth(); x++) {
+			vector<tuple<size_t, size_t>> orig_coord;
+			for (size_t x = 0; x < in.getWidth(); x++) {
 				orig_coord.push_back(make_tuple(x, y));
 				line.push_back(in.getColor(x, y));
 			}
@@ -56,11 +63,13 @@ public:
 
 class LineFinderVertical : public LineFinder {
 public:
-	LineFinderVertical(vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+	LineFinderVertical(vector<vector<tuple<size_t, size_t>>> & orig_coords,
 		vector<vector<ofColor>> &orig_lines) : LineFinder(orig_coords, orig_lines) { }
 
 
 	void findLines(const ofPixels & in, int threadNum) override {
+		maxLength = in.getHeight();
+
 		int nCores = std::thread::hardware_concurrency();
 
 		int nLines = std::floor(in.getWidth() / nCores);
@@ -75,10 +84,10 @@ public:
 
 		int lineLength = in.getWidth();
 
-		for (unsigned int x = srtLine; x < endLine; x++) {
+		for (size_t x = srtLine; x < endLine; x++) {
 			vector<ofColor> line;
-			vector<tuple<unsigned int, unsigned int>> orig_coord;
-			for (unsigned int y = 0; y < in.getHeight(); y++) {
+			vector<tuple<size_t, size_t>> orig_coord;
+			for (size_t y = 0; y < in.getHeight(); y++) {
 				orig_coord.push_back(make_tuple(x, y));
 				line.push_back(in.getColor(x, y));
 			}
@@ -90,11 +99,13 @@ public:
 
 class LineFinderAntidiagonal : public LineFinder {
 public:
-	LineFinderAntidiagonal(vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+	LineFinderAntidiagonal(vector<vector<tuple<size_t, size_t>>> & orig_coords,
 		vector<vector<ofColor>> &orig_lines) : LineFinder(orig_coords, orig_lines) { }
 		
 
 	void findLines(const ofPixels & in, int threadNum) override {
+		maxLength =  min(in.getWidth(), in.getHeight());
+
 		int nCores = std::thread::hardware_concurrency();
 
 		int totalNLines = in.getHeight() + in.getWidth() - 1;
@@ -109,9 +120,9 @@ public:
 			endLine += remLines;
 		}
 
-		for (unsigned int l = srtLine; l < endLine; l++) {
+		for (size_t l = srtLine; l < endLine; l++) {
 			vector<ofColor> line;
-			vector<tuple<unsigned int, unsigned int>> orig_coord;
+			vector<tuple<size_t, size_t>> orig_coord;
 			int py;
 			int o = l - in.getWidth() + 1;
 
@@ -133,11 +144,13 @@ public:
 
 class LineFinderDiagonal : public LineFinder {
 public:
-	LineFinderDiagonal(vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+	LineFinderDiagonal(vector<vector<tuple<size_t, size_t>>> & orig_coords,
 		vector<vector<ofColor>> &orig_lines) : LineFinder(orig_coords, orig_lines) { }
 
 
 	void findLines(const ofPixels & in, int threadNum) override {
+		maxLength =  min(in.getWidth(), in.getHeight());
+
 		int nCores = std::thread::hardware_concurrency();
 
 		int totalNLines = in.getHeight() + in.getWidth() - 1;
@@ -152,9 +165,9 @@ public:
 			endLine += remLines;
 		}
 
-		for (unsigned int l = srtLine; l < endLine; l++) {
+		for (size_t l = srtLine; l < endLine; l++) {
 			vector<ofColor> line;
-			vector<tuple<unsigned int, unsigned int>> orig_coord;
+			vector<tuple<size_t, size_t>> orig_coord;
 			int py;
 			int o = l;
 

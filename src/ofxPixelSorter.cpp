@@ -62,6 +62,7 @@ void PixelSorter::setupThreads() {
 	for (int i = 0; i < nCores; i++) {
 
 		unique_ptr<PixelSortingThread> newThread = make_unique<PixelSortingThread>();
+			
 		newThread->setSettings(settings);
 		newThread->setLines(in, i);
 		threads.push_back(std::move(newThread));
@@ -76,6 +77,7 @@ void PixelSorter::pixelSort()
 	uint64_t srtTime = ofGetSystemTimeMillis();
 
 	for (auto &t : threads) {
+
 		t->setSettings(settings);
 		t->startThread();		
 	}

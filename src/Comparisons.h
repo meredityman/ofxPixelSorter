@@ -19,19 +19,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.getBrightness() > b.getBrightness();
+				return a.getBrightness() < b.getBrightness();
 			}
 			else {
-				return a.getBrightness() < b.getBrightness();
+				return a.getBrightness() > b.getBrightness();
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.getBrightness() >= b * 255;
+				return a.getBrightness() < b * 256;
 			}
 			else {
-				return a.getBrightness() <= b * 255;
+				return a.getBrightness() > b * 256;
 			}
 		}
 	};
@@ -42,19 +42,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.getLightness() > b.getLightness();
+				return a.getLightness() < b.getLightness();
 			}
 			else {
-				return a.getLightness() < b.getLightness();
+				return a.getLightness() > b.getLightness();
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.getLightness() >= b * 255;
+				return a.getLightness() < b * 256;
 			}
 			else {
-				return a.getLightness() <= b * 255;
+				return a.getLightness() > b * 256;
 			}
 		}
 	};
@@ -65,19 +65,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.getSaturation() > b.getSaturation();
+				return a.getSaturation() < b.getSaturation();
 			}
 			else {
-				return a.getSaturation() < b.getSaturation();
+				return a.getSaturation() > b.getSaturation();
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.getSaturation() >= b * 255;
+				return a.getSaturation() < b * 256;
 			}
 			else {
-				return a.getSaturation() <= b * 255;
+				return a.getSaturation() > b * 256;
 			}
 		}
 	};
@@ -88,19 +88,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.getHue() > b.getHue();
+				return a.getHue() < b.getHue();
 			}
 			else {
-				return a.getHue() < b.getHue();
+				return a.getHue() > b.getHue();
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.getHue() >= b * 255;
+				return a.getHue() < b * 256;
 			}
 			else {
-				return a.getHue() <= b * 255;
+				return a.getHue() > b * 256;
 			}
 		}
 	};
@@ -110,19 +110,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.r > b.r;
+				return a.r < b.r;
 			}
 			else {
-				return a.r < b.r;
+				return a.r > b.r;
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.r >= b * 255;
+				return a.r < b * 256;
 			}
 			else {
-				return a.r <= b * 255;
+				return a.r > b * 256;
 			}
 		}
 	};
@@ -132,19 +132,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.g > b.g;
+				return a.g < b.g;
 			}
 			else {
-				return a.g < b.g;
+				return a.g > b.g;
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.g >= b * 255;
+				return a.g < b * 256;
 			}
 			else {
-				return a.g <= b * 255;
+				return a.g > b * 256;
 			}
 		}
 	};
@@ -154,19 +154,19 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
-				return a.b > b.b;
+				return a.b < b.b;
 			}
 			else {
-				return a.b < b.b;
+				return a.b > b.b;
 			}
 		}
 
 		bool operator()(ofColor a, float b)  const {
 			if (_swap) {
-				return a.b >= b * 255;
+				return a.b < b * 256;
 			}
 			else {
-				return a.getBrightness() <= b * 255;
+				return a.b > b * 256;
 			}
 		}
 	};
@@ -195,10 +195,10 @@ namespace PixelComparisons {
 
 		bool operator()(ofColor a, float b)  const {
 				if (_swap) {
-					return ofRandomuf() > b;
+					return ofRandomuf() < b;
 				}
 				else {
-					return ofRandomuf() < b;
+					return ofRandomuf() > b;
 				}
 		}
 	};

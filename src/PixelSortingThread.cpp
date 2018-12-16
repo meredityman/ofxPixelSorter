@@ -4,10 +4,9 @@
 //--------------------------------------------------------------
 void PixelSortingThread::setSettings(const PixelSorterSettings &settings) {
 
-	sortFunctions.sortFunction   = GetSortFunction(settings.getSortDir(), settings.getSortMode());
-	sortFunctions.startCondition = GetTestCondition(settings.getUpSwap(), settings.getStartMode());
-	sortFunctions.stopCondition  = GetTestCondition(settings.getDownSwap(), settings.getStopMode());
-	lineFinder = GetLineFinder(settings.getOrientation());
+	sortFunctions.sortFunction   = GetSortFunction(   settings.getSortDir()   , settings.getSortMode());
+	sortFunctions.startCondition = GetTestCondition(  settings.getUpSwap()  , settings.getStartMode());
+	sortFunctions.stopCondition  = GetTestCondition( !settings.getDownSwap(), settings.getStopMode());
 
 	direction   = settings.getDirection();
 	orientation = settings.getOrientation();
@@ -19,7 +18,12 @@ void PixelSortingThread::setSettings(const PixelSorterSettings &settings) {
 	downThresh = settings.getDownThresh();
 
 
+	if (lineFinder != nullptr) {
+		maxLength = lineFinder->getSeqLength(maxSeq);
+		minLength = lineFinder->getSeqLength(minSeq);
+	}
 }
+
 //--------------------------------------------------------------
 void PixelSortingThread::setLines(const ofPixels & in, int threadNum) {
 	lineFinder = GetLineFinder(orientation);
@@ -33,9 +37,7 @@ void PixelSortingThread::readOutPixels(ofPixels & out) {
 
 			out.setColor(	std::get<0>(orig_coords[i][j]),
 							std::get<1>(orig_coords[i][j]), 
-							out_lines[i][j]);
-
-
+							out_lines[i][j]);			
 		}
 	}
 }
@@ -87,11 +89,11 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 
 	vector<ofColor> subLine;
 
-	unsigned int srt;
-	unsigned int end;
-	unsigned int inc;
-	unsigned int stp;
-	unsigned int lineLength = line.size();;
+	size_t srt;
+	size_t end;
+	size_t inc;
+	size_t stp;
+	size_t lineLength = line.size();;
 
 	if (direction == DIRECTION_TYPE::POSITIVE) {
 		srt = 0;
@@ -113,14 +115,14 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 		// If already Sorting
 		if (sorting) {
 			// If force stop
-			if (endOfLine || subLine.size() == maxSeq) {
+			if (endOfLine || subLine.size() == maxLength) {
 				sorting = false;
 
 				if (subLine.size() > 1) {
 					sortSubLine(subLine, line, i);
 				}
 			}
-			else if (subLine.size() >= minSeq) {
+			else if (subLine.size() >= minLength) {
 				if (sortFunctions.stopCondition->operator()(line[i], downThresh)) {
 					sorting = false;
 
