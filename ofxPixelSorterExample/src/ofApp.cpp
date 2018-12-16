@@ -7,7 +7,7 @@ using namespace PixelComparisons;
 void ofApp::setup(){
 	ofLogToConsole();
 	ofSetLogLevel(OF_LOG_VERBOSE);
-
+	pixelSorter.setup();
 	setupGui();
 }
 //--------------------------------------------------------------
@@ -29,7 +29,7 @@ void ofApp::loadImage() {
 
 			if (ext == "jpg" || ext == "JPG" || ext == "png" || "PNG") {
 				img.load(path);
-				pixelSorter.setup(img);
+				pixelSorter.setImage(img);
 				out = ofImage(img);
 				ofLogNotice() << "Loaded Image: " << result.fileName;
 				imageLoaded = true;

@@ -221,8 +221,8 @@ struct PixelSorterSettings {
 	ofParameter<float> upThresh;
 	ofParameter<float> downThresh;
 
-	ofParameter<unsigned int> maxSeq;
-	ofParameter<unsigned int> minSeq;
+	ofParameter<int> maxSeq;
+	ofParameter<int> minSeq;
 
 private:
 
@@ -256,8 +256,8 @@ private:
 		_onUpdateRequired.push(upThresh.newListener([&](float&) {updateRequired(); }));
 		_onUpdateRequired.push(downThresh.newListener([&](float&) {updateRequired(); }));
 
-		_onUpdateRequired.push(maxSeq.newListener([&](unsigned int&) {updateRequired(); }));
-		_onUpdateRequired.push(minSeq.newListener([&](unsigned int&) {updateRequired(); }));
+		_onUpdateRequired.push(maxSeq.newListener([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push(minSeq.newListener([&](int&) {updateRequired(); }));
 	}
 
 	void AddThreadSetupListeners() {

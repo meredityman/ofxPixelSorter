@@ -1,13 +1,9 @@
 #include "ofxPixelSorter.h"
 
 //--------------------------------------------------------------
-void PixelSorter::setup(const ofPixels & in)
+void PixelSorter::setup()
 {
 	ofLogVerbose() << "Setting up...";
-	setImage(in);
-	bIsSetup = true;
-	bUpdateRequired = true;
-
 	ofAddListener(settings.onUpdateRequired, this, &PixelSorter::updateRequired);
 	ofAddListener(settings.onThreadSetupRequired, this, &PixelSorter::threadSetupRequired);
 }
@@ -18,13 +14,15 @@ void PixelSorter::setImage(const ofPixels & in)
 	ofLogVerbose() << "Setting Image...";
 	this->in = in;
 	out = ofPixels(in);
+	bImageSet = true;
 	bUpdateRequired = true;
+	bSetupRequired = true;
 }
 
 //--------------------------------------------------------------
 void PixelSorter::update()
 {
-	if (!bIsSetup) { 
+	if (!bImageSet) { 
 		ofLogError() << "Pixel sorter not initialised"; 
 		return;
 	}
@@ -35,7 +33,9 @@ void PixelSorter::update()
 
 	ofLogVerbose() << settings.toString();
 
-	if (bSetupRequired) { setupThreads(); }
+	if (bSetupRequired) {
+		setupThreads(); 
+	}
 
 
 	pixelSort();
@@ -45,7 +45,7 @@ void PixelSorter::update()
 
 //--------------------------------------------------------------
 ofPixels& PixelSorter::getPixels() {
-	if (!bIsSetup) {
+	if (!bImageSet) {
 		ofLogError() << "Pixel sorter not initialised";
 	}
 
@@ -54,7 +54,7 @@ ofPixels& PixelSorter::getPixels() {
 }
 //--------------------------------------------------------------
 void PixelSorter::setupThreads() {
-
+	ofLogVerbose() << "Setting up threads";
 	threads.clear();
 
 	int nCores = std::thread::hardware_concurrency();

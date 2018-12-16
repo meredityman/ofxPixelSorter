@@ -7,7 +7,7 @@ class PixelSorter
 {
 public:
 
-	void setup(const ofPixels & in);
+	void setup();
 	void setImage(const ofPixels & in);
 
 	void update();
@@ -17,7 +17,7 @@ public:
 		return bFrameIsNew; 
 	}
 	bool isSetup() const { 
-		return bIsSetup;
+		return bImageSet;
 	};
 	bool settingsHaveChanged() const {
 		return bUpdateRequired;
@@ -41,7 +41,7 @@ private:
 	ofPixels in;
 	ofPixels out;
 
-	bool bIsSetup = false;
+	bool bImageSet = false;
 	bool bFrameIsNew = false;
 	bool bSetupRequired = true;
 	bool bUpdateRequired = false;
