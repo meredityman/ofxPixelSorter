@@ -1,17 +1,15 @@
 #pragma once
 #include "ofMain.h"
 
-#define USE_OFXGUI
-
-#ifdef USE_OFXGUI
-#include "ofxGui.h"
-#endif
 
 enum class ORIENTATION_TYPE {
 	HORIZONTAL,
-	VERTICAL
+	VERTICAL,
+	DIAGONAL,
+	ANTIDIAGONAL
+
 };
-const string orientationNames[] = { "horizontal", "vertical" };
+const string orientationNames[] = { "horizontal", "vertical", "diagonal", "anti-diagonal" };
 
 enum class DIRECTION_TYPE {
 	POSITIVE,
@@ -51,7 +49,7 @@ const string comparitorNames[] = {
 struct PixelSorterSettings {
 
 	PixelSorterSettings() {
-		orientation.set("Orientation", (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::VERTICAL);
+		orientation.set("Orientation", (int)ORIENTATION_TYPE::DIAGONAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::ANTIDIAGONAL);
 		direction.set("Direction",     (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE);
 		sortDir.set("Sort Direction",  (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE);
 		sortMode.set("Sort Modes",  (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::BRIGHTNESS, (int)COMPARATOR::NONE);
@@ -67,39 +65,20 @@ struct PixelSorterSettings {
 		maxSeq.set("Max Length", 5120, 0, 5120);
 		minSeq.set("Min Length", 0, 0, 5120);
 
-		//orientation.addListener(this, &PixelSorterSettings::updateOrientationName);
-
-
+		AddUpdateListeners();
+		AddThreadSetupListeners();
 	}
-#ifdef USE_OFXGUI
-	void AddParamsToPanel (ofxPanel &panel) {
-		panel.add(orientation);
-		panel.add(direction);
-		panel.add(sortDir);
-		panel.add(sortMode);
-		panel.add(startMode);
-		panel.add(stopMode);
 
-		panel.add(upSwap);
-		panel.add(downSwap);
-
-		panel.add(upThresh);
-		panel.add(downThresh);
-
-		panel.add(maxSeq);
-		panel.add(minSeq);
-	}
-#endif
 
 	string toString() {
 		ostringstream stream;
-
+		stream << "\n";
 		stream << "Orientation: "    << orientationNames[(int)orientation] << "\n";
 		stream << "Direction: "      << directionNames[(int)direction] << "\n";
 		stream << "Sort Direction: " << sortDirNames[(int)sortDir] << "\n";
-		stream << "Sort Modes: "     << comparitorNames[(int)sortMode] << "\n";
+		stream << "Sort Mode: "     << comparitorNames[(int)sortMode] << "\n";
 		stream << "Start Mode: "     << comparitorNames[(int)startMode] << "\n";
-		stream << "Stop Modes: "     << comparitorNames[(int)stopMode] << "\n";
+		stream << "Stop Mode: "     << comparitorNames[(int)stopMode] << "\n";
 
 		stream << "Up Swap: "   << ofToString(upSwap) << "\n";
 		stream << "Down Swap: " << ofToString(downSwap) << "\n";
@@ -113,71 +92,159 @@ struct PixelSorterSettings {
 		return stream.str();
 	}
 
-	//void updateOrientationName(const void * sender, int &value) {
-	//	((ofParameter<int>*)sender)->setName("");
-
-	//}
-
-	ORIENTATION_TYPE getOrientation() {
+	ORIENTATION_TYPE getOrientation() const {
 		return (ORIENTATION_TYPE)orientation.get();
 	}
 
-	DIRECTION_TYPE getDirection() {
+	DIRECTION_TYPE getDirection() const {
 		return (DIRECTION_TYPE)direction.get();
 	}
 
-	SORT_DIR getSortDir() {
+	SORT_DIR getSortDir()  const {
 		return (SORT_DIR)sortDir.get();
 	}
 
-	COMPARATOR getSortMode() {
+	COMPARATOR getSortMode()  const {
 		return (COMPARATOR)sortMode.get();
 	}
 
-	COMPARATOR getStartMode() {
+	COMPARATOR getStartMode()  const {
 		return (COMPARATOR)startMode.get();
 	}
 
-	COMPARATOR getStopMode() {
+	COMPARATOR getStopMode()  const {
 		return (COMPARATOR)stopMode.get();
 	}
 
+	unsigned int getMaxSeq() const {
+		return maxSeq;
+	}
+	unsigned int getMinSeq()  const {
+		return minSeq;
+	}
+
+	bool getUpSwap()  const {
+		return upSwap;
+	}	
+	
+	bool getDownSwap()  const {
+		return downSwap;
+	}
+
+	float getUpThresh() const {
+		return upThresh;
+	}
+
+	bool getDownThresh()  const {
+		return downThresh;
+	}
+
 	void setOrientation(const ORIENTATION_TYPE orientation) {
-		this->orientation = (int) orientation;
+		setIfChanged(this->orientation, orientation);
 	};
 	void setDirection(const DIRECTION_TYPE direction) {
-		this->direction = (int)direction;
+		setIfChanged(this->direction, (int)direction);
 	};
 	void setSortDir(const SORT_DIR sortDir) {
-		this->sortDir = (int)sortDir;
+		setIfChanged(this->sortDir, (int)sortDir);
 	};
 	void setSortMode(const COMPARATOR sortMode) {
-		this->sortMode = (int)sortMode;
+		setIfChanged(this->sortMode, (int)sortMode);
 	};
 	void setStartMode(const COMPARATOR startMode) {
-		this->startMode = (int)startMode;
+		setIfChanged(this->startMode, (int)startMode);
 	};
 	void setStopMode(const COMPARATOR stopMode) {
-		this->stopMode = (int)stopMode;
+		setIfChanged(this->stopMode, (int)stopMode);
 	};
 	void setUpSwap(const bool upSwap) {
-		this->upSwap = upSwap;
+		setIfChanged(this->upSwap,  upSwap);
 	};
 	void setDownSwap(const bool downSwap) {
-		this->downSwap = downSwap;
+		setIfChanged(this->downSwap,  downSwap);
 	};
+
+
 	void setUpThresh(const float upThresh) {
-		this->upThresh = upThresh;
+		setIfChanged(this->upThresh,  upThresh);
 	};
 	void setDownThresh(const float downThresh) {
-		this->downThresh = downThresh;
+		setIfChanged(this->downThresh,  downThresh);
 	};
+	void incUpThresh(float inc) {
+		this->upThresh += inc;
+	};
+	void incDownThresh(float inc) {
+		this->downThresh += inc;
+	};
+
+
 	void setMaxSeq(const unsigned int maxSeq) {
-		this->maxSeq = maxSeq;
+		setIfChanged(this->maxSeq,  maxSeq);
 	};
 	void setMinSeq(const unsigned int minSeq) {
-		this->minSeq = minSeq;
+		setIfChanged(this->minSeq, minSeq);	
 	};
+
+	template<	class ParameterType, typename NewValueType>
+	typename std::enable_if_t<std::is_enum<NewValueType>::value> setIfChanged(ParameterType parameter, const NewValueType newValue) {
+		if (	parameter != (int)newValue &&
+				(int)newValue >= parameter.getMin() &&
+				(int)newValue <= parameter.getMax()			
+			) parameter = (int)newValue;
+	}
+
+	template<	class ParameterType, typename NewValueType>
+	typename std::enable_if_t<!std::is_enum<NewValueType>::value> setIfChanged(ParameterType parameter, const NewValueType newValue) {
+		if (	parameter != newValue &&
+				newValue >= parameter.getMin() &&
+				newValue <= parameter.getMax()
+			) parameter = newValue;
+	}
+
+	ofEvent<bool> onUpdateRequired;
+	ofEvent<bool> onThreadSetupRequired;
+
+
+private:
+
+	ofEventListeners _onUpdateRequired;
+	ofEventListeners _onThreadSetupRequired;
+
+	void updateRequired() {
+		bool update = true;
+		ofLogNotice() << "Update required";
+		ofNotifyEvent(onUpdateRequired, update, this);
+	}
+
+	void threadSetupRequired() {
+		bool update = true;
+		ofNotifyEvent(onThreadSetupRequired, update, this);
+	}
+
+
+	void AddUpdateListeners() {
+		_onUpdateRequired.push(orientation.newListener([&](int&) { updateRequired(); }));
+
+		_onUpdateRequired.push(direction.newListener([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push(sortDir.newListener([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push(sortMode.newListener([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push(startMode.newListener([&](int&) {updateRequired(); }));
+		_onUpdateRequired.push(stopMode.newListener([&](int&) {updateRequired(); }));
+
+		_onUpdateRequired.push(upSwap.newListener([&](bool&) {updateRequired(); }));
+		_onUpdateRequired.push(downSwap.newListener([&](bool&) {updateRequired(); }));
+
+		_onUpdateRequired.push(upThresh.newListener([&](float&) {updateRequired(); }));
+		_onUpdateRequired.push(downThresh.newListener([&](float&) {updateRequired(); }));
+
+		_onUpdateRequired.push(maxSeq.newListener([&](unsigned int&) {updateRequired(); }));
+		_onUpdateRequired.push(minSeq.newListener([&](unsigned int&) {updateRequired(); }));
+	}
+
+	void AddThreadSetupListeners() {
+		_onThreadSetupRequired.push(orientation.newListener([&](int&) {threadSetupRequired(); }));
+	}
 
 	ofParameter<int> orientation;
 	ofParameter<int> direction;

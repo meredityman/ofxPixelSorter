@@ -9,7 +9,7 @@ using namespace PixelComparisons;
 class PixelSortingThread : public ofThread
 {
 public:
-	void setSettings(PixelSorterSettings settings);
+	void setSettings(const PixelSorterSettings &settings);
 	void setLines(const ofPixels & in, int threadNum);
 	void readOutPixels(ofPixels & out);
 	void threadedFunction();
@@ -46,15 +46,22 @@ private:
 
 	unique_ptr<LineFinder> lineFinder;
 
-	unique_ptr<Comparator> GetTestCondition(bool start, bool swap);
-	unique_ptr<Comparator> GetSortFunction();
+	unique_ptr<Comparator> GetTestCondition(bool swap, COMPARATOR mode);
+	unique_ptr<Comparator> GetSortFunction(SORT_DIR sortDir, COMPARATOR mode);
 	unique_ptr<Comparator> GetComparitor(COMPARATOR mode, bool swap);
 
 	unique_ptr<LineFinder> GetLineFinder(ORIENTATION_TYPE mode);
 
+	DIRECTION_TYPE direction;
+	ORIENTATION_TYPE orientation;
+
+	unsigned int maxSeq;
+	unsigned int minSeq;
+
+	float upThresh;
+	float downThresh;
 
 	bool sorting = false;
 	bool endOfLine = false;
 
-	PixelSorterSettings settings;
 };

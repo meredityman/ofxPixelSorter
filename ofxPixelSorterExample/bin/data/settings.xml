@@ -8,4 +8,17 @@
 		<Max_sequence_length>200</Max_sequence_length>
 		<Min_sequence_length>20</Min_sequence_length>
 	</Pixel_sorting_params>
+	<Orientation>0</Orientation>
+	<Direction>0</Direction>
+	<Sort_Direction>0</Sort_Direction>
+	<Sort_Modes>0</Sort_Modes>
+	<Start_Mode>0</Start_Mode>
+	<Stop_Mode>0</Stop_Mode>
+	<Up_Swap>0</Up_Swap>
+	<Down_Swap>0</Down_Swap>
+	<Up_Thresh>0.5</Up_Thresh>
+	<Down_Thesh>0.5</Down_Thesh>
+	<Max_Length>5120</Max_Length>
+	<Min_Length>0</Min_Length>
+	<Auto_update>0</Auto_update>
 </group>

@@ -3,32 +3,19 @@
 //--------------------------------------------------------------
 void PixelSorter::setup(const ofPixels & in)
 {
+	ofLogVerbose() << "Setting up...";
 	setImage(in);
 	bIsSetup = true;
 	bUpdateRequired = true;
 
-	onUpdateRequired.push(settings.orientation.newListener([&](int&) {this->updateRequired(); }));
-	onThreadSetupRequired = settings.orientation.newListener([&](int&) {this->threadSetupRequired(); });
-
-	onUpdateRequired.push(settings.direction.newListener([&](int&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.sortDir.newListener([&](int&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.sortMode.newListener([&](int&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.startMode.newListener([&](int&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.stopMode.newListener([&](int&) {this->updateRequired(); }));
-
-	onUpdateRequired.push(settings.upSwap.newListener([&](bool&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.downSwap.newListener([&](bool&) {this->updateRequired(); }));
-
-	onUpdateRequired.push(settings.upThresh.newListener([&](float&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.downThresh.newListener([&](float&) {this->updateRequired(); }));
-
-	onUpdateRequired.push(settings.maxSeq.newListener([&](unsigned int&) {this->updateRequired(); }));
-	onUpdateRequired.push(settings.minSeq.newListener([&](unsigned int&) {this->updateRequired(); }));
+	ofAddListener(settings.onUpdateRequired, this, &PixelSorter::updateRequired);
+	ofAddListener(settings.onThreadSetupRequired, this, &PixelSorter::threadSetupRequired);
 }
 
 //--------------------------------------------------------------
 void PixelSorter::setImage(const ofPixels & in)
 {
+	ofLogVerbose() << "Setting Image...";
 	this->in = in;
 	out = ofPixels(in);
 	bUpdateRequired = true;
@@ -42,10 +29,13 @@ void PixelSorter::update()
 		return;
 	}
 	else if (!bUpdateRequired) {
+		ofLogNotice() << "No update required";
 		return;
 	}
 
-	if (!bThreadsSetup) { setupThreads(); }
+	ofLogVerbose() << settings.toString();
+
+	if (bSetupRequired) { setupThreads(); }
 
 
 	pixelSort();
@@ -76,7 +66,7 @@ void PixelSorter::setupThreads() {
 		newThread->setLines(in, i);
 		threads.push_back(std::move(newThread));
 	}
-	bThreadsSetup = true;
+	bSetupRequired = false;
 }
 
 //--------------------------------------------------------------

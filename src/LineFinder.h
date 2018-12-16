@@ -87,3 +87,89 @@ public:
 		}
 	}
 };
+
+class LineFinderAntidiagonal : public LineFinder {
+public:
+	LineFinderAntidiagonal(vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+		vector<vector<ofColor>> &orig_lines) : LineFinder(orig_coords, orig_lines) { }
+		
+
+	void findLines(const ofPixels & in, int threadNum) override {
+		int nCores = std::thread::hardware_concurrency();
+
+		int totalNLines = in.getHeight() + in.getWidth() - 1;
+		 
+		int nLines = std::floor(totalNLines / nCores);
+		int remLines = totalNLines % nCores;
+
+		size_t srtLine = threadNum * nLines;
+		size_t endLine = srtLine + nLines;
+
+		if (threadNum == nCores - 1) {
+			endLine += remLines;
+		}
+
+		for (unsigned int l = srtLine; l < endLine; l++) {
+			vector<ofColor> line;
+			vector<tuple<unsigned int, unsigned int>> orig_coord;
+			int py;
+			int o = l - in.getWidth() + 1;
+
+			for (int px = 0; px < in.getWidth(); px++) {
+				py = px + o;
+
+				if (py >= 0 && py < in.getHeight()) {
+					orig_coord.push_back(make_tuple(px, py));
+					line.push_back(in.getColor(px, py));
+				}
+
+			}
+
+			orig_coords->push_back(orig_coord);
+			orig_lines->push_back(line);
+		}
+	}
+};
+
+class LineFinderDiagonal : public LineFinder {
+public:
+	LineFinderDiagonal(vector<vector<tuple<unsigned int, unsigned int>>> & orig_coords,
+		vector<vector<ofColor>> &orig_lines) : LineFinder(orig_coords, orig_lines) { }
+
+
+	void findLines(const ofPixels & in, int threadNum) override {
+		int nCores = std::thread::hardware_concurrency();
+
+		int totalNLines = in.getHeight() + in.getWidth() - 1;
+
+		int nLines = std::floor(totalNLines / nCores);
+		int remLines = totalNLines % nCores;
+
+		size_t srtLine = threadNum * nLines;
+		size_t endLine = srtLine + nLines;
+
+		if (threadNum == nCores - 1) {
+			endLine += remLines;
+		}
+
+		for (unsigned int l = srtLine; l < endLine; l++) {
+			vector<ofColor> line;
+			vector<tuple<unsigned int, unsigned int>> orig_coord;
+			int py;
+			int o = l;
+
+			for (int px = 0; px < in.getWidth(); px++) {
+				py = - px + o;
+
+				if (py >= 0 && py < in.getHeight()) {
+					orig_coord.push_back(make_tuple(px, py));
+					line.push_back(in.getColor(px, py));
+				}
+
+			}
+
+			orig_coords->push_back(orig_coord);
+			orig_lines->push_back(line);
+		}
+	}
+};

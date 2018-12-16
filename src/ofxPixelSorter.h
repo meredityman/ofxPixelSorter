@@ -23,29 +23,27 @@ public:
 		return bUpdateRequired;
 	};
 
+	void updateRequired(bool & update) {
+		bUpdateRequired = update;
+	}
+	void threadSetupRequired(bool & thread) {
+		bSetupRequired = thread;
+	}
+
 	PixelSorterSettings settings;
+
 
 private:
 
 	void setupThreads();
 	void pixelSort();
 
-	void updateRequired() {
-		ofLogNotice() << "Update Required";
-		bUpdateRequired = true;
-	}
-	void threadSetupRequired() {
-		bThreadsSetup = false;
-	}
-	ofEventListeners onUpdateRequired;
-	ofEventListener onThreadSetupRequired;
-
 	ofPixels in;
 	ofPixels out;
 
 	bool bIsSetup = false;
 	bool bFrameIsNew = false;
-	bool bThreadsSetup = false;
+	bool bSetupRequired = true;
 	bool bUpdateRequired = false;
 
 	vector<unique_ptr<PixelSortingThread>> threads;	

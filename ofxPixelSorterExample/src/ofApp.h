@@ -1,8 +1,6 @@
 #pragma once
 #include "ofMain.h"
 #include "ofxPixelSorter.h"
-#include "ofxGui.h"
-
 
 class ofApp : public ofBaseApp{
 
@@ -23,13 +21,11 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-		ofxPanel gui;
-
 		ofImage img;
 		ofVideoPlayer vid;
 		ofImage out;
 
 		PixelSorter pixelSorter;
 
-		ofParameter<bool> autoUpdate;
+		ofParameter<bool> autoUpdate = false;
 };
