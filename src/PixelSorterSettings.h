@@ -142,75 +142,12 @@ struct PixelSorterSettings {
 		return downThresh;
 	}
 
-	void setOrientation(const ORIENTATION_TYPE orientation) {
-		setIfChanged(this->orientation, orientation);
-	};
-	void setDirection(const DIRECTION_TYPE direction) {
-		setIfChanged(this->direction, (int)direction);
-	};
-	void setSortDir(const SORT_DIR sortDir) {
-		setIfChanged(this->sortDir, (int)sortDir);
-	};
-	void setSortMode(const COMPARATOR sortMode) {
-		setIfChanged(this->sortMode, (int)sortMode);
-	};
-	void setStartMode(const COMPARATOR startMode) {
-		setIfChanged(this->startMode, (int)startMode);
-	};
-	void setStopMode(const COMPARATOR stopMode) {
-		setIfChanged(this->stopMode, (int)stopMode);
-	};
-	void setUpSwap(const bool upSwap) {
-		setIfChanged(this->upSwap,  upSwap);
-	};
-	void setDownSwap(const bool downSwap) {
-		setIfChanged(this->downSwap,  downSwap);
-	};
-
-
-	void setUpThresh(const float upThresh) {
-		setIfChanged(this->upThresh,  upThresh);
-	};
-	void setDownThresh(const float downThresh) {
-		setIfChanged(this->downThresh,  downThresh);
-	};
-	void incUpThresh(float inc) {
-		this->upThresh += inc;
-	};
-	void incDownThresh(float inc) {
-		this->downThresh += inc;
-	};
-
-
-	void setMaxSeq(const float maxSeq) {
-		setIfChanged(this->maxSeq,  maxSeq);
-	};
-	void setMinSeq(const float minSeq) {
-		setIfChanged(this->minSeq, minSeq);	
-	};
-
-
 	bool isRandom() {
 		return	(startMode == (int)COMPARATOR::RANDOM ||
 				 startMode == (int)COMPARATOR::RANDOM ||
 				 sortMode == (int)COMPARATOR::RANDOM     );
 	}
 
-	template<	class ParameterType, typename NewValueType>
-	typename std::enable_if_t<std::is_enum<NewValueType>::value> setIfChanged(ParameterType parameter, const NewValueType newValue) {
-		if (	parameter != (int)newValue &&
-				(int)newValue >= parameter.getMin() &&
-				(int)newValue <= parameter.getMax()			
-			) parameter = (int)newValue;
-	}
-
-	template<	class ParameterType, typename NewValueType>
-	typename std::enable_if_t<!std::is_enum<NewValueType>::value> setIfChanged(ParameterType parameter, const NewValueType newValue) {
-		if (	parameter != newValue &&
-				newValue >= parameter.getMin() &&
-				newValue <= parameter.getMax()
-			) parameter = newValue;
-	}
 
 	ofEvent<bool> onUpdateRequired;
 	ofEvent<bool> onThreadSetupRequired;
