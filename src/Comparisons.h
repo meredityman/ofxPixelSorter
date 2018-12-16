@@ -6,17 +6,27 @@ namespace PixelComparisons {
 	class Comparator {
 	protected:
 		bool _swap;
+		virtual bool operator()(ofColor a, ofColor b) const = 0;
+		virtual bool operator()(ofColor a, float b) const   = 0;
+
 	public:
 		Comparator(bool swap) : _swap(swap) {}
 
-		virtual bool operator()(ofColor a, ofColor b) const = 0;
-		virtual bool operator()(ofColor a, float b) const   = 0;
+		virtual void sort(vector<ofColor> & subLine) {
+			std::sort(subLine.begin(), subLine.end(), [this](ofColor a, ofColor b) { return operator()(a, b); });
+		};
+
+		virtual bool compare(const ofColor & col, const float thresh) {
+			return operator()(col, thresh);
+		}
+
 	};
 
 	class CompareBrightness : public Comparator {
 	public:
 		CompareBrightness(bool swap) : Comparator(swap) {}
 
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.getBrightness() < b.getBrightness();
@@ -39,7 +49,8 @@ namespace PixelComparisons {
 	class CompareLightness : public Comparator {
 	public:
 		CompareLightness(bool swap) : Comparator(swap) {}
-
+	
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.getLightness() < b.getLightness();
@@ -62,7 +73,8 @@ namespace PixelComparisons {
 	class CompareSaturation : public Comparator {
 	public:
 		CompareSaturation(bool swap) : Comparator(swap) {}
-
+	
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.getSaturation() < b.getSaturation();
@@ -85,7 +97,8 @@ namespace PixelComparisons {
 	class CompareHue : public Comparator {
 	public:
 		CompareHue(bool swap) : Comparator(swap) {}
-
+	
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.getHue() < b.getHue();
@@ -108,6 +121,7 @@ namespace PixelComparisons {
 	public:
 		CompareRedness(bool swap) : Comparator(swap) {}
 
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.r < b.r;
@@ -129,7 +143,8 @@ namespace PixelComparisons {
 	class CompareGreeness : public Comparator {
 	public:
 		CompareGreeness(bool swap) : Comparator(swap) {}
-
+	
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.g < b.g;
@@ -151,7 +166,8 @@ namespace PixelComparisons {
 	class CompareBlueness : public Comparator {
 	public:
 		CompareBlueness(bool swap) : Comparator(swap) {}
-
+	
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			if (_swap) {
 				return a.b < b.b;
@@ -173,8 +189,9 @@ namespace PixelComparisons {
 
 	class CompareNone : public Comparator {
 	public:
-		CompareNone(bool swap) : Comparator(swap) {}
+		CompareNone(bool swap) : Comparator(swap) {}	
 
+	protected:
 		bool operator()(ofColor a, ofColor b)  const {
 			return _swap;
 		}
@@ -189,16 +206,24 @@ namespace PixelComparisons {
 	public:
 		CompareRandom(bool swap) : Comparator(swap) {}
 
+		virtual void sort(vector<ofColor> & subLine) override {
+			std::random_shuffle(subLine.begin(), subLine.end());
+		}
+	
+
+	protected:
+
 		bool operator()(ofColor a, ofColor b)  const {
-			return _swap;
+
+			return true;
 		}
 
 		bool operator()(ofColor a, float b)  const {
 				if (_swap) {
-					return ofRandomuf() < b;
+					return ofNoise(ofGetElapsedTimef() * 1000.0) < b;
 				}
 				else {
-					return ofRandomuf() > b;
+					return ofNoise(ofGetElapsedTimef() * 1000.0) > b;
 				}
 		}
 	};

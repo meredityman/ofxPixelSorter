@@ -6,7 +6,7 @@ using namespace PixelComparisons;
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofLogToConsole();
-	ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetLogLevel(OF_LOG_NOTICE);
 	pixelSorter.setup();
 	setupGui();
 }
@@ -21,17 +21,18 @@ void ofApp::loadImage() {
 	imageLoaded = false;
 	ofFileDialogResult result = ofSystemLoadDialog("Load image", false, ofFilePath::getAbsolutePath(ofToDataPath("")));
 	if (result.bSuccess) {
-		string path = result.getPath();
 		ofFile file(result.getPath());
+
+		imageName = result.fileName;
 
 		if (file.isFile()) {
 			string ext = file.getExtension();
 
 			if (ext == "jpg" || ext == "JPG" || ext == "png" || "PNG") {
-				img.load(path);
+				img.load(file.path());
 				pixelSorter.setImage(img);
 				out = ofImage(img);
-				ofLogNotice() << "Loaded Image: " << result.fileName;
+				ofLogNotice() << "Loaded Image: " << imageName;
 				imageLoaded = true;
 			}
 		}
@@ -54,7 +55,7 @@ void ofApp::saveImage() {
 void ofApp::update(){
 	if (!imageLoaded) return;
 
-	if (autoUpdate) {
+	if (autoUpdate && ofGetElapsedTimeMillis() % 1000 >= 1.0) {
 		pixelSorter.update();
 	}
 
@@ -76,10 +77,7 @@ void ofApp::draw(){
 		out.draw(w, 0, w, h);
 	}
 	drawGUI();
-	//ofDrawBitmapStringHighlight(pixelSorter.settings.toString(),
-	//	ofVec2f(0, 0),
-	//	ofColor::black,
-	//	ofColor::white); 
+
 }
 //--------------------------------------------------------------
 void ofApp::drawGUI() {
@@ -87,32 +85,51 @@ void ofApp::drawGUI() {
 
 	gui.begin();
 	if (ofxImGui::BeginWindow("Settings", mainSettings, false)) {
-		if (ImGui::Button("Load"))	 loadImage();
-		if (ImGui::Button("Save"))	 saveImage();
-		if (ImGui::Button("Update")) pixelSorter.update();
 
-		ofxImGui::AddRadio(pixelSorter.settings.orientation, orientationNames, orientationNames.size());
-		ofxImGui::AddRadio(pixelSorter.settings.direction  , directionNames  , directionNames.size());
-		ofxImGui::AddRadio(pixelSorter.settings.sortDir    , sortDirNames    , sortDirNames.size());
-		ofxImGui::AddRadio(pixelSorter.settings.sortMode   , comparitorNames , comparitorNames.size());
-		ofxImGui::AddRadio(pixelSorter.settings.startMode  , comparitorNames , comparitorNames.size());
-		ofxImGui::AddRadio(pixelSorter.settings.stopMode   , comparitorNames , comparitorNames.size());
+		if (imageLoaded) {
+			stringstream str;
+			str << imageName << "\n";
+			str << img.getWidth() << " x " << img.getHeight();
+			ImGui::Text(str.str().c_str());
+		}
+		else {
+			ImGui::Text("No Image Loaded...");
+		}
+
+
+		if (ImGui::Button("Load"))	 loadImage();
+		ImGui::SameLine();
+		if (ImGui::Button("Save"))	 saveImage();
+
+
+		if (ImGui::Button("Update") && !autoUpdate) pixelSorter.update();
+		ImGui::SameLine();
+		ofxImGui::AddParameter(autoUpdate);
+
+		ImGui::BeginGroup();
+		ofxImGui::AddRadio(pixelSorter.settings.orientation, orientationNames, 2);
+		ofxImGui::AddRadio(pixelSorter.settings.direction  , directionNames  , 2);
+		ofxImGui::AddRadio(pixelSorter.settings.sortDir    , sortDirNames    , 2);
+		ofxImGui::AddRadio(pixelSorter.settings.sortMode   , comparitorNames , 2);
+		ofxImGui::AddRadio(pixelSorter.settings.startMode  , comparitorNames , 2);
+		ofxImGui::AddRadio(pixelSorter.settings.stopMode   , comparitorNames , 2);
 	
 		ofxImGui::AddParameter(pixelSorter.settings.upSwap);
-		ofxImGui::AddParameter(pixelSorter.settings.downSwap);
-
+		ImGui::SameLine();
 		ofxImGui::AddParameter(pixelSorter.settings.upThresh);
+
+
+		ofxImGui::AddParameter(pixelSorter.settings.downSwap);
+		ImGui::SameLine();
 		ofxImGui::AddParameter(pixelSorter.settings.downThresh);
 
 
 		ofxImGui::AddParameter(pixelSorter.settings.maxSeq);
 		ofxImGui::AddParameter(pixelSorter.settings.minSeq);
-	
+		ImGui::EndGroup();
 	}
 
 	ofxImGui::EndWindow(mainSettings);
-
-
 
 	gui.end();
 }

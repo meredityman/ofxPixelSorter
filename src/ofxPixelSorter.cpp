@@ -39,7 +39,8 @@ void PixelSorter::update()
 
 
 	pixelSort();
-	bUpdateRequired = false;
+
+	bUpdateRequired = settings.isRandom();	
 	bFrameIsNew = true;
 }
 

@@ -71,6 +71,7 @@ void PixelSortingThread::threadedFunction()
 //--------------------------------------------------------------
 void PixelSortingThread::sortLines() {
 	uint64_t srtTime = ofGetSystemTimeMicros();
+	ofSeedRandom();
 
 	for (auto & line : out_lines) {
 		uint64_t lineTime = ofGetSystemTimeMicros();
@@ -123,7 +124,7 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 				}
 			}
 			else if (subLine.size() >= minLength) {
-				if (sortFunctions.stopCondition->operator()(line[i], downThresh)) {
+				if (sortFunctions.stopCondition->compare(line[i], downThresh)) {
 					sorting = false;
 
 					if (subLine.size() > 1) {
@@ -141,7 +142,7 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 		}
 		// If not already Sorting
 		else {
-			if (sortFunctions.startCondition->operator()(line[i], upThresh)) {
+			if (sortFunctions.startCondition->compare(line[i], upThresh)) {
 				sorting = true;
 				subLine.push_back(line[i]);
 			}
@@ -150,8 +151,8 @@ void PixelSortingThread::sortLine(vector<ofColor> & line) {
 };
 
 void PixelSortingThread::sortSubLine(vector<ofColor> & subLine, vector<ofColor> & line, int & i) {
-	std::sort(subLine.begin(), subLine.end(), std::ref(*sortFunctions.sortFunction));
 
+	sortFunctions.sortFunction->sort(subLine);
 
 	if (direction == DIRECTION_TYPE::POSITIVE) {
 		std::copy(subLine.begin(), subLine.end(), line.begin() + i - subLine.size());

@@ -189,6 +189,13 @@ struct PixelSorterSettings {
 		setIfChanged(this->minSeq, minSeq);	
 	};
 
+
+	bool isRandom() {
+		return	(startMode == (int)COMPARATOR::RANDOM ||
+				 startMode == (int)COMPARATOR::RANDOM ||
+				 sortMode == (int)COMPARATOR::RANDOM     );
+	}
+
 	template<	class ParameterType, typename NewValueType>
 	typename std::enable_if_t<std::is_enum<NewValueType>::value> setIfChanged(ParameterType parameter, const NewValueType newValue) {
 		if (	parameter != (int)newValue &&

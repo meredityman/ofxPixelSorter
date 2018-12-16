@@ -31,11 +31,12 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
 		ofImage img;
+		string imageName;
 		ofImage out;
 		bool imageLoaded = false;
 
 		PixelSorter pixelSorter;
 		ofxImGui::Gui gui;
 
-		ofParameter<bool> autoUpdate = false;
+		ofParameter<bool> autoUpdate = true;
 };
