@@ -9,19 +9,19 @@ enum class ORIENTATION_TYPE {
 	ANTIDIAGONAL
 
 };
-const string orientationNames[] = { "horizontal", "vertical", "diagonal", "anti-diagonal" };
+const vector<string> orientationNames = { "horizontal", "vertical", "diagonal", "anti-diagonal" };
 
 enum class DIRECTION_TYPE {
 	POSITIVE,
 	NEGATIVE
 };
-const string directionNames[] = { "positive", "negative" };
+const  vector<string> directionNames = { "positive", "negative" };
 
 enum class SORT_DIR {
 	POSITIVE,
 	NEGATIVE
 };
-const string sortDirNames[] = { "positive", "negative" };
+const vector<string> sortDirNames = { "positive", "negative" };
 
 enum class  COMPARATOR {
 	BRIGHTNESS,
@@ -34,7 +34,7 @@ enum class  COMPARATOR {
 	RANDOM,
 	NONE
 };
-const string comparitorNames[] = { 
+const vector<string> comparitorNames = { 
 	"brightness", 
 	"lightness",
 	"saturation",
@@ -49,6 +49,9 @@ const string comparitorNames[] = {
 struct PixelSorterSettings {
 
 	PixelSorterSettings() {
+
+		ofLogNotice() << "Here";
+
 		orientation.set("Orientation", (int)ORIENTATION_TYPE::DIAGONAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::ANTIDIAGONAL);
 		direction.set("Direction",     (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::POSITIVE, (int)DIRECTION_TYPE::NEGATIVE);
 		sortDir.set("Sort Direction",  (int)SORT_DIR::POSITIVE, (int)SORT_DIR::POSITIVE, (int)SORT_DIR::NEGATIVE);
@@ -204,7 +207,22 @@ struct PixelSorterSettings {
 
 	ofEvent<bool> onUpdateRequired;
 	ofEvent<bool> onThreadSetupRequired;
+	
+	ofParameter<int> orientation;
+	ofParameter<int> direction;
+	ofParameter<int> sortDir;
+	ofParameter<int> sortMode;
+	ofParameter<int> startMode;
+	ofParameter<int> stopMode;
 
+	ofParameter<bool> upSwap;
+	ofParameter<bool> downSwap;
+
+	ofParameter<float> upThresh;
+	ofParameter<float> downThresh;
+
+	ofParameter<unsigned int> maxSeq;
+	ofParameter<unsigned int> minSeq;
 
 private:
 
@@ -246,19 +264,4 @@ private:
 		_onThreadSetupRequired.push(orientation.newListener([&](int&) {threadSetupRequired(); }));
 	}
 
-	ofParameter<int> orientation;
-	ofParameter<int> direction;
-	ofParameter<int> sortDir;
-	ofParameter<int> sortMode;
-	ofParameter<int> startMode;
-	ofParameter<int> stopMode;
-
-	ofParameter<bool> upSwap;
-	ofParameter<bool> downSwap;
-
-	ofParameter<float> upThresh;
-	ofParameter<float> downThresh;
-
-	ofParameter<unsigned int> maxSeq;
-	ofParameter<unsigned int> minSeq;
 };

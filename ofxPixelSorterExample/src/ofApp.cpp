@@ -8,7 +8,18 @@ void ofApp::setup(){
 	ofLogToConsole();
 	ofSetLogLevel(OF_LOG_VERBOSE);
 
-	ofFileDialogResult result = ofSystemLoadDialog("Select image/video", false, ofFilePath::getAbsolutePath(ofToDataPath("")));
+	setupGui();
+}
+//--------------------------------------------------------------
+void ofApp::setupGui() {
+	gui.setup();
+	gui.setTheme(new ofxImGui::DefaultTheme());
+	ImGui::GetIO().MouseDrawCursor = false;
+}
+//--------------------------------------------------------------
+void ofApp::loadImage() {
+	imageLoaded = false;
+	ofFileDialogResult result = ofSystemLoadDialog("Load image", false, ofFilePath::getAbsolutePath(ofToDataPath("")));
 	if (result.bSuccess) {
 		string path = result.getPath();
 		ofFile file(result.getPath());
@@ -16,27 +27,33 @@ void ofApp::setup(){
 		if (file.isFile()) {
 			string ext = file.getExtension();
 
-			if (ext == "jpg" || ext == "JPG" || ext == "png") {
+			if (ext == "jpg" || ext == "JPG" || ext == "png" || "PNG") {
 				img.load(path);
-			}
-			else {
-				ofLogError();
-				exit();
+				pixelSorter.setup(img);
+				out = ofImage(img);
+				ofLogNotice() << "Loaded Image: " << result.fileName;
+				imageLoaded = true;
 			}
 		}
 	}
-	else {
-		ofLogError();
-		exit();
-	}
-
-	pixelSorter.setup(img);
-	out = ofImage(img);
-
 }
+//--------------------------------------------------------------
+void ofApp::saveImage() {
+	ofFileDialogResult result = ofSystemSaveDialog("image.png", "Save Image" );
 
+	if (result.bSuccess) {
+
+		bool success = out.save(result.getPath());
+
+		if (success) {
+			ofLogNotice() << "Successfuly saved " << result.getName();
+		}
+	}
+}
 //--------------------------------------------------------------
 void ofApp::update(){
+	if (!imageLoaded) return;
+
 	if (autoUpdate) {
 		pixelSorter.update();
 	}
@@ -50,18 +67,54 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	if (imageLoaded) {
 
-	float w = ofGetWidth() * 0.5;
-	float h = w / img.getWidth() * img.getHeight();
+		float w = ofGetWidth() * 0.5;
+		float h = w / img.getWidth() * img.getHeight();
 
-	img.draw(0, 0, w, h);
-	out.draw(w, 0, w, h);
+		img.draw(0, 0, w, h);
+		out.draw(w, 0, w, h);
+	}
+	drawGUI();
+	//ofDrawBitmapStringHighlight(pixelSorter.settings.toString(),
+	//	ofVec2f(0, 0),
+	//	ofColor::black,
+	//	ofColor::white); 
+}
+//--------------------------------------------------------------
+void ofApp::drawGUI() {
+	auto mainSettings = ofxImGui::Settings();
+
+	gui.begin();
+	if (ofxImGui::BeginWindow("Settings", mainSettings, false)) {
+		if (ImGui::Button("Load"))	 loadImage();
+		if (ImGui::Button("Save"))	 saveImage();
+		if (ImGui::Button("Update")) pixelSorter.update();
+
+		ofxImGui::AddRadio(pixelSorter.settings.orientation, orientationNames, orientationNames.size());
+		ofxImGui::AddRadio(pixelSorter.settings.direction  , directionNames  , directionNames.size());
+		ofxImGui::AddRadio(pixelSorter.settings.sortDir    , sortDirNames    , sortDirNames.size());
+		ofxImGui::AddRadio(pixelSorter.settings.sortMode   , comparitorNames , comparitorNames.size());
+		ofxImGui::AddRadio(pixelSorter.settings.startMode  , comparitorNames , comparitorNames.size());
+		ofxImGui::AddRadio(pixelSorter.settings.stopMode   , comparitorNames , comparitorNames.size());
+	
+		ofxImGui::AddParameter(pixelSorter.settings.upSwap);
+		ofxImGui::AddParameter(pixelSorter.settings.downSwap);
+
+		ofxImGui::AddParameter(pixelSorter.settings.upThresh);
+		ofxImGui::AddParameter(pixelSorter.settings.downThresh);
 
 
-	ofDrawBitmapStringHighlight(pixelSorter.settings.toString(),
-		ofVec2f(0, 0),
-		ofColor::black,
-		ofColor::white); 
+		ofxImGui::AddParameter(pixelSorter.settings.maxSeq);
+		ofxImGui::AddParameter(pixelSorter.settings.minSeq);
+	
+	}
+
+	ofxImGui::EndWindow(mainSettings);
+
+
+
+	gui.end();
 }
 
 //--------------------------------------------------------------
