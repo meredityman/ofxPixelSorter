@@ -12,7 +12,6 @@ public:
 	void setSettings(const PixelSorterSettings &settings);
 	void setLines(const ofPixels & in, int threadNum);
 	void readOutPixels(ofPixels & out);
-	void threadedFunction();
 
 	ofColor getColor(int x, int y) const {
 		return out_lines[y - srtLine][x];
@@ -32,6 +31,8 @@ private:
 	vector<vector<tuple<size_t, size_t>>> orig_coords;
 	vector<vector<ofColor>> orig_lines;
 	vector<vector<ofColor>> out_lines;
+
+	void threadedFunction();
 
 	void sortLines();
 	void sortLine(vector<ofColor> & line);

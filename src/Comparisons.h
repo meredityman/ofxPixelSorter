@@ -6,11 +6,12 @@ namespace PixelComparisons {
 	class Comparator {
 	protected:
 		bool _swap;
-		virtual bool operator()(ofColor a, ofColor b) const = 0;
-		virtual bool operator()(ofColor a, float b) const   = 0;
 
 	public:
 		Comparator(bool swap) : _swap(swap) {}
+
+		virtual bool operator()(ofColor a, ofColor b) const = 0;
+		virtual bool operator()(ofColor a, float b) const   = 0;
 
 		virtual void sort(vector<ofColor> & subLine) {
 			std::sort(subLine.begin(), subLine.end(), [this](ofColor a, ofColor b) { return operator()(a, b); });

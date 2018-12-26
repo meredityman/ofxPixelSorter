@@ -6,7 +6,10 @@ using namespace PixelComparisons;
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofLogToConsole();
-	ofSetLogLevel(OF_LOG_NOTICE);
+	ofSetLogLevel(OF_LOG_VERBOSE);
+
+	ofSetWindowTitle("Pixel Sorter");
+
 	pixelSorter.setup();
 	setupGui();
 }
@@ -61,20 +64,28 @@ void ofApp::update(){
 
 	if (pixelSorter.isFrameNew()) {
 		out = pixelSorter.getPixels();
-	}
-
-	
+	}	
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	ofSetColor(ofColor::white);
 	if (imageLoaded) {
 
 		float w = ofGetWidth() * 0.5;
 		float h = w / img.getWidth() * img.getHeight();
 
 		img.draw(0, 0, w, h);
+
+		if (pixelSorter.isUpdating()) {
+			ofSetColor(ofColor::grey);
+		}
+		else {			
+			ofSetColor(ofColor::white);
+		}
 		out.draw(w, 0, w, h);
+
+
 	}
 	drawGUI();
 

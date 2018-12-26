@@ -3,11 +3,34 @@
 //--------------------------------------------------------------
 void PixelSorter::setup()
 {
-	ofLogVerbose() << "Setting up...";
+	ofLogVerbose() << "Setting up Pixel Sorter...";
 	ofAddListener(settings.onUpdateRequired, this, &PixelSorter::updateRequired);
 	ofAddListener(settings.onThreadSetupRequired, this, &PixelSorter::threadSetupRequired);
 }
-
+//--------------------------------------------------------------
+bool PixelSorter::isFrameNew() const { 
+	return bFrameIsNew; 
+}
+//--------------------------------------------------------------
+bool PixelSorter::isSetup() const { 
+	return bImageSet;
+};
+//--------------------------------------------------------------
+bool PixelSorter::isUpdating() const { 
+	return isThreadRunning();
+};
+//--------------------------------------------------------------
+bool PixelSorter::settingsHaveChanged() const {
+	return bUpdateRequired;
+};
+//--------------------------------------------------------------
+void PixelSorter::updateRequired(bool & update) {
+	PixelSorter::bUpdateRequired = update;
+}
+//--------------------------------------------------------------
+void PixelSorter::threadSetupRequired(bool & thread) {
+	bSetupRequired = thread;
+}
 //--------------------------------------------------------------
 void PixelSorter::setImage(const ofPixels & in)
 {
@@ -23,11 +46,15 @@ void PixelSorter::setImage(const ofPixels & in)
 void PixelSorter::update()
 {
 	if (!bImageSet) { 
-		ofLogError() << "Pixel sorter not initialised"; 
+		ofLogWarning() << "Pixel sorter not initialised"; 
+		return;
+	}
+	else if (isUpdating()) {
+		//ofLogVerbose() << "Already updating";
 		return;
 	}
 	else if (!bUpdateRequired) {
-		ofLogNotice() << "No update required";
+		//ofLogVerbose() << "No update required";
 		return;
 	}
 
@@ -36,10 +63,12 @@ void PixelSorter::update()
 	if (bSetupRequired) {
 		setupThreads(); 
 	}
-
-
+	startThread();
+}
+//--------------------------------------------------------------
+void PixelSorter::threadedFunction() {
+	
 	pixelSort();
-
 	bUpdateRequired = settings.isRandom();	
 	bFrameIsNew = true;
 }
@@ -74,7 +103,6 @@ void PixelSorter::setupThreads() {
 //--------------------------------------------------------------
 void PixelSorter::pixelSort()
 {
-
 	uint64_t srtTime = ofGetSystemTimeMillis();
 
 	for (auto &t : threads) {
@@ -89,7 +117,7 @@ void PixelSorter::pixelSort()
 	for (auto &t : threads) {
 		t->waitForThread(false, -1);
 
-		//ofLogVerbose() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
+		ofLogVerbose() << "Exec time " << t->executionTime << " Time/line " << t->timePerLines();
 		t->readOutPixels(out);
 	}
 

@@ -3,7 +3,7 @@
 #include "PixelSortingThread.h"
 #include "PixelSorterSettings.h"
 
-class PixelSorter
+class PixelSorter : public ofThread
 {
 public:
 
@@ -11,30 +11,21 @@ public:
 	void setImage(const ofPixels & in);
 
 	void update();
+
 	ofPixels& getPixels();
 
-	bool isFrameNew() const { 
-		return bFrameIsNew; 
-	}
-	bool isSetup() const { 
-		return bImageSet;
-	};
-	bool settingsHaveChanged() const {
-		return bUpdateRequired;
-	};
+	bool isFrameNew() const;
+	bool isSetup() const;
+	bool isUpdating() const;
+	bool settingsHaveChanged() const;
 
-	void updateRequired(bool & update) {
-		bUpdateRequired = update;
-	}
-	void threadSetupRequired(bool & thread) {
-		bSetupRequired = thread;
-	}
+	void updateRequired(bool & update);
+	void threadSetupRequired(bool & thread);
 
 	PixelSorterSettings settings;
 
-
 private:
-
+	void threadedFunction();
 	void setupThreads();
 	void pixelSort();
 

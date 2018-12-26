@@ -9,7 +9,9 @@ protected:
 	size_t maxLength = 0;
 
 public:
-	virtual size_t getSeqLength(float seq);
+	virtual size_t getSeqLength(float seq){
+		return floor(seq * maxLength );
+	}
 
 	LineFinder(	vector<vector<tuple<size_t, size_t>>> & orig_coords,
 				vector<vector<ofColor>> &orig_lines ) {
@@ -20,7 +22,6 @@ public:
 	};
 
 	virtual void findLines(const ofPixels & in, int threadNum) = 0;
-
 };
 
 

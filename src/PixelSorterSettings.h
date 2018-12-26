@@ -50,8 +50,6 @@ struct PixelSorterSettings {
 
 	PixelSorterSettings() {
 
-		ofLogNotice() << "Here";
-
 		orientation.set( "Orientation",    (int)ORIENTATION_TYPE::DIAGONAL, (int)ORIENTATION_TYPE::HORIZONTAL, (int)ORIENTATION_TYPE::ANTIDIAGONAL);
 		direction.set  ( "Direction",      (int)DIRECTION_TYPE::POSITIVE,   (int)DIRECTION_TYPE::POSITIVE,     (int)DIRECTION_TYPE::NEGATIVE);
 		sortDir.set    ( "Sort Direction", (int)SORT_DIR::POSITIVE,         (int)SORT_DIR::POSITIVE,           (int)SORT_DIR::NEGATIVE);
@@ -79,14 +77,14 @@ struct PixelSorterSettings {
 		stream << "Orientation: "    << orientationNames[(int)orientation] << "\n";
 		stream << "Direction: "      << directionNames[(int)direction] << "\n";
 		stream << "Sort Direction: " << sortDirNames[(int)sortDir] << "\n";
-		stream << "Sort Mode: "     << comparitorNames[(int)sortMode] << "\n";
+		stream << "Sort Mode: "      << comparitorNames[(int)sortMode] << "\n";
 		stream << "Start Mode: "     << comparitorNames[(int)startMode] << "\n";
-		stream << "Stop Mode: "     << comparitorNames[(int)stopMode] << "\n";
+		stream << "Stop Mode: "      << comparitorNames[(int)stopMode] << "\n";
 
 		stream << "Up Swap: "   << ofToString(upSwap) << "\n";
 		stream << "Down Swap: " << ofToString(downSwap) << "\n";
 
-		stream << "Up thresh: " << ofToString(upThresh) << "\n";
+		stream << "Up thresh: "   << ofToString(upThresh) << "\n";
 		stream << "Down Thresh: " << ofToString(downThresh) << "\n";
 
 		stream << "Max Length: " << ofToString(maxSeq) << "\n";
@@ -143,9 +141,9 @@ struct PixelSorterSettings {
 	}
 
 	bool isRandom() {
-		return	(startMode == (int)COMPARATOR::RANDOM ||
-				 startMode == (int)COMPARATOR::RANDOM ||
-				 sortMode == (int)COMPARATOR::RANDOM     );
+		return	( startMode == (int)COMPARATOR::RANDOM ||
+				  startMode == (int)COMPARATOR::RANDOM ||
+				  sortMode == (int)COMPARATOR::RANDOM     );
 	}
 
 
@@ -175,12 +173,13 @@ private:
 
 	void updateRequired() {
 		bool update = true;
-		ofLogNotice() << "Update required";
+		ofLogVerbose() << "Update required";
 		ofNotifyEvent(onUpdateRequired, update, this);
 	}
 
 	void threadSetupRequired() {
 		bool update = true;
+		ofLogVerbose() << "Thread setup required";
 		ofNotifyEvent(onThreadSetupRequired, update, this);
 	}
 
