@@ -57,11 +57,11 @@ struct PixelSorterSettings {
 		startMode.set  ( "Start Mode",     (int)COMPARATOR::BRIGHTNESS,     (int)COMPARATOR::BRIGHTNESS,       (int)COMPARATOR::NONE);
 		stopMode.set   ( "Stop Mode",      (int)COMPARATOR::BRIGHTNESS,     (int)COMPARATOR::BRIGHTNESS,       (int)COMPARATOR::NONE);
 
-		upSwap.set(   "Up Swap" , false);
-		downSwap.set("Down Swap", false);
+		startSwap.set("Start Swap" , false);
+		stopSwap.set ("Stop Swap", false);
 
-		upThresh.set(  "Up Thresh" , 0.5, 0.0, 1.0);
-		downThresh.set("Down Thesh", 0.5, 0.0, 1.0);
+		startThresh.set("Start Thresh" , 0.5, 0.0, 1.0);
+		stopThresh.set ("Stop Thesh", 0.5, 0.0, 1.0);
 
 		maxSeq.set("Max Length", 1.0, 0.0, 1.0);
 		minSeq.set("Min Length", 0.0, 0.0, 1.0);
@@ -81,11 +81,11 @@ struct PixelSorterSettings {
 		stream << "Start Mode: "     << comparitorNames[(int)startMode] << "\n";
 		stream << "Stop Mode: "      << comparitorNames[(int)stopMode] << "\n";
 
-		stream << "Up Swap: "   << ofToString(upSwap) << "\n";
-		stream << "Down Swap: " << ofToString(downSwap) << "\n";
+		stream << "Start Swap: "   << ofToString(startSwap) << "\n";
+		stream << "Stop Swap: " << ofToString(stopSwap) << "\n";
 
-		stream << "Up thresh: "   << ofToString(upThresh) << "\n";
-		stream << "Down Thresh: " << ofToString(downThresh) << "\n";
+		stream << "Start thresh: "   << ofToString(startThresh) << "\n";
+		stream << "Stop Thresh: " << ofToString(stopThresh) << "\n";
 
 		stream << "Max Length: " << ofToString(maxSeq) << "\n";
 		stream << "Min Length: " << ofToString(minSeq) << "\n";
@@ -125,19 +125,19 @@ struct PixelSorterSettings {
 	}
 
 	bool getUpSwap()  const {
-		return upSwap;
+		return startSwap;
 	}	
 	
 	bool getDownSwap()  const {
-		return downSwap;
+		return stopSwap;
 	}
 
 	float getUpThresh() const {
-		return upThresh;
+		return startThresh;
 	}
 
 	float getDownThresh()  const {
-		return downThresh;
+		return stopThresh;
 	}
 
 	bool isRandom() {
@@ -157,11 +157,11 @@ struct PixelSorterSettings {
 	ofParameter<int> startMode;
 	ofParameter<int> stopMode;
 
-	ofParameter<bool> upSwap;
-	ofParameter<bool> downSwap;
+	ofParameter<bool> startSwap;
+	ofParameter<bool> stopSwap;
 
-	ofParameter<float> upThresh;
-	ofParameter<float> downThresh;
+	ofParameter<float> startThresh;
+	ofParameter<float> stopThresh;
 
 	ofParameter<float> maxSeq;
 	ofParameter<float> minSeq;
@@ -193,11 +193,11 @@ private:
 		_onUpdateRequired.push( startMode.newListener  ([&](int&) {updateRequired(); }));
 		_onUpdateRequired.push( stopMode.newListener   ([&](int&) {updateRequired(); }));
 								 					  
-		_onUpdateRequired.push( upSwap.newListener     ([&](bool&) {updateRequired(); }));
-		_onUpdateRequired.push( downSwap.newListener   ([&](bool&) {updateRequired(); }));
+		_onUpdateRequired.push( startSwap.newListener  ([&](bool&) {updateRequired(); }));
+		_onUpdateRequired.push( stopSwap.newListener   ([&](bool&) {updateRequired(); }));
 								 					  
-		_onUpdateRequired.push( upThresh.newListener   ([&](float&) {updateRequired(); }));
-		_onUpdateRequired.push( downThresh.newListener ([&](float&) {updateRequired(); }));
+		_onUpdateRequired.push( startThresh.newListener([&](float&) {updateRequired(); }));
+		_onUpdateRequired.push( stopThresh.newListener ([&](float&) {updateRequired(); }));
 							    
 		_onUpdateRequired.push( maxSeq.newListener     ([&](float&) {updateRequired(); }));
 		_onUpdateRequired.push( minSeq.newListener     ([&](float&) {updateRequired(); }));

@@ -41,21 +41,19 @@ void PixelSorter::setImage(const ofPixels & in)
 	bUpdateRequired = true;
 	bSetupRequired = true;
 }
-
 //--------------------------------------------------------------
-void PixelSorter::update()
-{
+bool PixelSorter::preUpdateChecks() {
 	if (!bImageSet) { 
 		ofLogWarning() << "Pixel sorter not initialised"; 
-		return;
+		return false;
 	}
 	else if (isUpdating()) {
 		//ofLogVerbose() << "Already updating";
-		return;
+		return false;
 	}
 	else if (!bUpdateRequired) {
 		//ofLogVerbose() << "No update required";
-		return;
+		return false;
 	}
 
 	ofLogVerbose() << settings.toString();
@@ -63,11 +61,21 @@ void PixelSorter::update()
 	if (bSetupRequired) {
 		setupThreads(); 
 	}
-	startThread();
 }
 //--------------------------------------------------------------
-void PixelSorter::threadedFunction() {
-	
+void PixelSorter::update(bool threaded) {
+	if (preUpdateChecks()) {
+		if (threaded) {
+			startThread();
+		}
+		else {
+			threadedFunction();
+		}
+		
+	}	
+}
+//--------------------------------------------------------------
+void PixelSorter::threadedFunction() {	
 	pixelSort();
 	bUpdateRequired = settings.isRandom();	
 	bFrameIsNew = true;

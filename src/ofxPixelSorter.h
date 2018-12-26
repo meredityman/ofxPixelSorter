@@ -10,7 +10,7 @@ public:
 	void setup();
 	void setImage(const ofPixels & in);
 
-	void update();
+	void update( bool threaded = false);
 
 	ofPixels& getPixels();
 
@@ -25,6 +25,7 @@ public:
 	PixelSorterSettings settings;
 
 private:
+	bool preUpdateChecks();
 	void threadedFunction();
 	void setupThreads();
 	void pixelSort();

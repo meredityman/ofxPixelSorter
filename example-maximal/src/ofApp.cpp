@@ -7,7 +7,6 @@ using namespace PixelComparisons;
 void ofApp::setup(){
 	ofLogToConsole();
 	ofSetLogLevel(OF_LOG_VERBOSE);
-
 	ofSetWindowTitle("Pixel Sorter");
 
 	pixelSorter.setup();
@@ -20,46 +19,11 @@ void ofApp::setupGui() {
 	ImGui::GetIO().MouseDrawCursor = false;
 }
 //--------------------------------------------------------------
-void ofApp::loadImage() {
-	imageLoaded = false;
-	ofFileDialogResult result = ofSystemLoadDialog("Load image", false, ofFilePath::getAbsolutePath(ofToDataPath("")));
-	if (result.bSuccess) {
-		ofFile file(result.getPath());
-
-		imageName = result.fileName;
-
-		if (file.isFile()) {
-			string ext = file.getExtension();
-
-			if (ext == "jpg" || ext == "JPG" || ext == "png" || "PNG") {
-				img.load(file.path());
-				pixelSorter.setImage(img);
-				out = ofImage(img);
-				ofLogNotice() << "Loaded Image: " << imageName;
-				imageLoaded = true;
-			}
-		}
-	}
-}
-//--------------------------------------------------------------
-void ofApp::saveImage() {
-	ofFileDialogResult result = ofSystemSaveDialog("image.png", "Save Image" );
-
-	if (result.bSuccess) {
-
-		bool success = out.save(result.getPath());
-
-		if (success) {
-			ofLogNotice() << "Successfuly saved " << result.getName();
-		}
-	}
-}
-//--------------------------------------------------------------
 void ofApp::update(){
 	if (!imageLoaded) return;
 
-	if (autoUpdate && ofGetElapsedTimeMillis() % 1000 >= 1.0) {
-		pixelSorter.update();
+	if (autoUpdate) {
+		pixelSorter.update(true);
 	}
 
 	if (pixelSorter.isFrameNew()) {
@@ -77,15 +41,15 @@ void ofApp::draw(){
 
 		img.draw(0, 0, w, h);
 
-		if (pixelSorter.isUpdating()) {
+
+		// Grey out image if its updating
+		if (pixelSorter.isUpdating()) 
 			ofSetColor(ofColor::grey);
-		}
-		else {			
+		else 
 			ofSetColor(ofColor::white);
-		}
+
 		out.draw(w, 0, w, h);
-
-
+		
 	}
 	drawGUI();
 
@@ -125,14 +89,14 @@ void ofApp::drawGUI() {
 		ofxImGui::AddRadio(pixelSorter.settings.startMode  , comparitorNames , 2);
 		ofxImGui::AddRadio(pixelSorter.settings.stopMode   , comparitorNames , 2);
 	
-		ofxImGui::AddParameter(pixelSorter.settings.upSwap);
+		ofxImGui::AddParameter(pixelSorter.settings.startSwap);
 		ImGui::SameLine();
-		ofxImGui::AddParameter(pixelSorter.settings.upThresh);
+		ofxImGui::AddParameter(pixelSorter.settings.startThresh);
 
 
-		ofxImGui::AddParameter(pixelSorter.settings.downSwap);
+		ofxImGui::AddParameter(pixelSorter.settings.stopSwap);
 		ImGui::SameLine();
-		ofxImGui::AddParameter(pixelSorter.settings.downThresh);
+		ofxImGui::AddParameter(pixelSorter.settings.stopThresh);
 
 
 		ofxImGui::AddParameter(pixelSorter.settings.maxSeq);
@@ -144,7 +108,41 @@ void ofApp::drawGUI() {
 
 	gui.end();
 }
+//--------------------------------------------------------------
+void ofApp::loadImage() {
+	imageLoaded = false;
+	ofFileDialogResult result = ofSystemLoadDialog("Load image", false, ofFilePath::getAbsolutePath(ofToDataPath("")));
+	if (result.bSuccess) {
+		ofFile file(result.getPath());
 
+		imageName = result.fileName;
+
+		if (file.isFile()) {
+			string ext = file.getExtension();
+
+			if (ext == "jpg" || ext == "JPG" || ext == "png" || "PNG") {
+				img.load(file.path());
+				pixelSorter.setImage(img);
+				out = ofImage(img);
+				ofLogNotice() << "Loaded Image: " << imageName;
+				imageLoaded = true;
+			}
+		}
+	}
+}
+//--------------------------------------------------------------
+void ofApp::saveImage() {
+	ofFileDialogResult result = ofSystemSaveDialog("image.png", "Save Image" );
+
+	if (result.bSuccess) {
+
+		bool success = out.save(result.getPath());
+
+		if (success) {
+			ofLogNotice() << "Successfuly saved " << result.getName();
+		}
+	}
+}
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
@@ -153,54 +151,4 @@ void ofApp::keyPressed(int key){
 		if (!autoUpdate) pixelSorter.update();
 		break;
 	}
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
 }
