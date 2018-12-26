@@ -74,7 +74,7 @@ void ofApp::drawGUI() {
 
 		if (ImGui::Button("Load"))	 loadImage();
 		ImGui::SameLine();
-		if (ImGui::Button("Save"))	 saveImage();
+		if (ImGui::Button("Save") && imageLoaded)	 saveImage();
 
 
 		if (ImGui::Button("Update") && !autoUpdate) pixelSorter.update();
